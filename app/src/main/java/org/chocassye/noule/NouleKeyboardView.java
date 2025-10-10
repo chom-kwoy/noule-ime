@@ -18,8 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import java.util.HashMap;
-
 public class NouleKeyboardView extends ConstraintLayout {
     private NouleIME imeService;
     private final int INITIAL_REPEAT_INTERVAL = 400;
@@ -47,13 +45,11 @@ public class NouleKeyboardView extends ConstraintLayout {
     };
     private final String[][] KO_UPPER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
-        {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"},
-        {"ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ"},
+        {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"}, // TODO: add tone marks
+        {"ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ"},
         {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
         {",", "EN", "Space", "."},
     };
-    private final String HANGUL_CONS_KEYS = "ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄸㅃㅆㅉ";
-    private final String HANGUL_VOWEL_KEYS = "ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅔㅒㅖ";
 
     private String[][] curLayout = null;
     private String[][] returnToLayout = null;
@@ -82,6 +78,17 @@ public class NouleKeyboardView extends ConstraintLayout {
     public void setParentService(NouleIME ime) {
         this.imeService = ime;
         setCurKeyLayout(EN_LOWER_LAYOUT);
+        this.imeService.setOnUpdateSelectionListener((oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd) -> {
+            // If the current selection in the text view changes, we should
+            // clear whatever candidate text we have.
+            if (!curComposingText.isEmpty() && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
+                InputConnection ic = imeService.getCurrentInputConnection();
+                if (ic != null) {
+                    ic.finishComposingText();
+                    this.curComposingText = "";
+                }
+            }
+        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -133,7 +140,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     private void typeSymbol(InputConnection ic, String key) {
-        if (HANGUL_CONS_KEYS.contains(key) || HANGUL_VOWEL_KEYS.contains(key)) {
+        if (HangulData.consInfoMap.containsKey(key) || HangulData.vowelInfoMap.containsKey(key)) {
             curComposingText += key;
 
             ic.setComposingText(getDisplayComposingText(curComposingText), 1);

@@ -122,9 +122,12 @@ public class HangulData {
         vowelInfoMap.put("ㆍ", new VowelInfo("ㆍ", "ᆞ"));
         vowelInfoMap.put("ㆎ", new VowelInfo("ㆎ", "ᆡ"));
 
+        composeMap.put("ㅃㅇ", "ㅹ");
+        composeMap.put("ㄱㄱ", "ㄲ");
         composeMap.put("ㄱㅅ", "ㄳ");
         composeMap.put("ㄴㅈ", "ㄵ");
         composeMap.put("ㄴㅎ", "ㄶ");
+        composeMap.put("ㄷㄷ", "ㄸ");
         composeMap.put("ㄹㄱ", "ㄺ");
         composeMap.put("ㄹㅁ", "ㄻ");
         composeMap.put("ㄹㅂ", "ㄼ");
@@ -132,7 +135,10 @@ public class HangulData {
         composeMap.put("ㄹㅌ", "ㄾ");
         composeMap.put("ㄹㅍ", "ㄿ");
         composeMap.put("ㄹㅎ", "ㅀ");
+        composeMap.put("ㅂㅂ", "ㅃ");
         composeMap.put("ㅂㅅ", "ㅄ");
+        composeMap.put("ㅅㅅ", "ㅆ");
+        composeMap.put("ㅈㅈ", "ㅉ");
         composeMap.put("ㅗㅏ", "ㅘ");
         composeMap.put("ㅗㅐ", "ㅙ");
         composeMap.put("ㅗㅣ", "ㅚ");
@@ -140,6 +146,7 @@ public class HangulData {
         composeMap.put("ㅜㅔ", "ㅞ");
         composeMap.put("ㅜㅣ", "ㅟ");
         composeMap.put("ㅡㅣ", "ㅢ");
+        composeMap.put("ㄴㄴ", "ㅥ");
         composeMap.put("ㄴㄷ", "ㅦ");
         composeMap.put("ㄴㅅ", "ㅧ");
         composeMap.put("ㄴㅿ", "ㅨ");
@@ -151,19 +158,25 @@ public class HangulData {
         composeMap.put("ㅁㅂ", "ㅮ");
         composeMap.put("ㅁㅅ", "ㅯ");
         composeMap.put("ㅁㅿ", "ㅰ");
+        composeMap.put("ㅁㅇ", "ㅱ");
         composeMap.put("ㅂㄱ", "ㅲ");
         composeMap.put("ㅂㄷ", "ㅳ");
         composeMap.put("ㅂㅅㄱ", "ㅴ");
         composeMap.put("ㅂㅅㄷ", "ㅵ");
         composeMap.put("ㅂㅈ", "ㅶ");
         composeMap.put("ㅂㅌ", "ㅷ");
+        composeMap.put("ㅂㅇ", "ㅸ");
+        composeMap.put("ㅂㅂㅇ", "ㅹ");
         composeMap.put("ㅅㄱ", "ㅺ");
         composeMap.put("ㅅㄴ", "ㅻ");
         composeMap.put("ㅅㄷ", "ㅼ");
         composeMap.put("ㅅㅂ", "ㅽ");
         composeMap.put("ㅅㅈ", "ㅾ");
+        composeMap.put("ㅇㅇ", "ㆀ");
         composeMap.put("ㆁㅅ", "ㆂ");
         composeMap.put("ㆁㅿ", "ㆃ");
+        composeMap.put("ㅍㅇ", "ㆄ");
+        composeMap.put("ㅎㅎ", "ㆅ");
         composeMap.put("ㅛㅑ", "ㆇ");
         composeMap.put("ㅛㅒ", "ㆈ");
         composeMap.put("ㅛㅣ", "ㆉ");
