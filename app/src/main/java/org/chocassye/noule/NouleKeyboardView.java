@@ -83,9 +83,23 @@ public class NouleKeyboardView extends ConstraintLayout {
     private String curComposingText = "";
     private int expectedSelEndPos = 0;
     private SuggestionAdapter suggestionAdapter;
+    private boolean ignoreOnce = false;
 
     public void initialize() {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
+
+        String[] punctuations = {
+            "?", ":", "~", "!", "@", "#", "$", "%", "^", "&", "*",
+            "(", ")", "'", "\"", "/", "\\", "|", "`", "{", "}", "[", "]",
+        };
+        Vector<HanjaDictEntry> dotEntries = new Vector<>();
+        for (String punct : punctuations) {
+            HanjaDictEntry entry = new HanjaDictEntry();
+            entry.hangul = ".";
+            entry.hanja = punct;
+            dotEntries.add(entry);
+        }
+        hanjaDict.put(".", dotEntries);
 
         Thread thread = new Thread(() -> {
             try {
@@ -143,18 +157,26 @@ public class NouleKeyboardView extends ConstraintLayout {
 
             // If the current selection in the text view changes, we should
             // clear whatever candidate text we have.
-            if (!curComposingText.isEmpty() && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
-                InputConnection ic = imeService.getCurrentInputConnection();
-                if (ic != null) {
-                    ic.finishComposingText();
-                    this.curComposingText = "";
-                    updateSuggestionBar(ic);
+            if (!curComposingText.isEmpty() &&
+                    (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
+                if (ignoreOnce) {
+                    ignoreOnce = false;
+                }
+                else {
+                    Log.i("MYLOG", "current selection in the text view changed, clear whatever candidate text we have");
+                    InputConnection ic = imeService.getCurrentInputConnection();
+                    if (ic != null) {
+                        ic.finishComposingText();
+                        this.curComposingText = "";
+                        updateSuggestionBar(ic);
+                    }
                 }
             }
 
             // If the content of the edittext is changed (e.g. flushed),
             // clear the composing buffer.
             if (this.expectedSelEndPos != oldSelEnd) {
+                Log.i("MYLOG", "content of the edittext is changed, clear the composing buffer");
                 InputConnection ic = imeService.getCurrentInputConnection();
                 if (ic != null && !curComposingText.isEmpty()) {
                     curComposingText = curComposingText.substring(curComposingText.length() - 1);
@@ -267,19 +289,32 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     private void typeSymbol(InputConnection ic, String key) {
         if (HangulData.consInfoMap.containsKey(key) || HangulData.vowelInfoMap.containsKey(key)) {
+            if (curComposingText.equals(".")) {
+                ic.finishComposingText();
+                curComposingText = "";
+                ignoreOnce = true;
+            }
             curComposingText += key;
+            Log.i("MYLOG", String.format("curComposingText: '%s'", curComposingText));
             ic.setComposingText(getDisplayComposingText(curComposingText), 1);
             updateSuggestionBar(ic);
         }
         else {
             ic.finishComposingText();
             curComposingText = "";
-            updateSuggestionBar(ic);
-            if (key.equals("Space")) {
-                ic.commitText(" ", 1);
+            if (key.equals(".")) {
+                curComposingText = ".";
+                ic.setComposingText(".", 1);
+                updateSuggestionBar(ic);
+                ignoreOnce = true;
             }
             else {
-                ic.commitText(key, 1);
+                updateSuggestionBar(ic);
+                if (key.equals("Space")) {
+                    ic.commitText(" ", 1);
+                } else {
+                    ic.commitText(key, 1);
+                }
             }
         }
     }

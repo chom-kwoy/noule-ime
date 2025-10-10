@@ -353,6 +353,9 @@ public class HangulData {
     }
 
     public static String getDisplayComposingText(String composingText) {
+        if (composingText.equals(".")) {
+            return ".";
+        }
         return new StateMachine().run(composingText);
     }
 
