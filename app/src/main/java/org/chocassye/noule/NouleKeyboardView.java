@@ -167,11 +167,13 @@ public class NouleKeyboardView extends ConstraintLayout {
                     } else {
                         button.setTextSize(20);
                     }
-                    curRow.addView(button, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         0,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         weight
-                    ));
+                    );
+                    params.setMargins(5, 0, 5, 0);
+                    curRow.addView(button, params);
                 }
             }
         }
