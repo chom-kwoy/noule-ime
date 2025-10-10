@@ -127,8 +127,11 @@ public class NouleKeyboardView extends ConstraintLayout {
                 if (key.equals("Space")) {
                     weight = 4.0f;
                 }
-                if (key.equals("Shift") || key.equals("Back")) {
+                else if (key.equals("Shift") || key.equals("Back")) {
                     weight = 1.3f;
+                }
+                else {
+                    button.setTextSize(20);
                 }
                 curRow.addView(button, new LinearLayout.LayoutParams(
                     0,
