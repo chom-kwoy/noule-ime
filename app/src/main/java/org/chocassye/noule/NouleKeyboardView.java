@@ -6,8 +6,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.HapticFeedbackConstants;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
@@ -27,28 +29,28 @@ public class NouleKeyboardView extends ConstraintLayout {
         {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
         {"a", "s", "d", "f", "g", "h", "j", "k", "l"},
         {"Shift", "z", "x", "c", "v", "b", "n", "m", "Back"},
-        {",", "KO", "Space", "."},
+        {",", "KO", "Space", ".", "Enter"},
     };
     private final String[][] EN_UPPER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
         {"A", "S", "D", "F", "G", "H", "J", "K", "L"},
         {"Shift", "Z", "X", "C", "V", "B", "N", "M", "Back"},
-        {",", "KO", "Space", "."},
+        {",", "KO", "Space", ".", "Enter"},
     };
     private final String[][] KO_LOWER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ"},
         {"ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ"},
         {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
-        {",", "EN", "Space", "."},
+        {",", "EN", "Space", ".", "Enter"},
     };
     private final String[][] KO_UPPER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"}, // TODO: add tone marks
         {"ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ"},
         {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
-        {",", "EN", "Space", "."},
+        {",", "EN", "Space", ".", "Enter"},
     };
 
     private String[][] curLayout = null;
@@ -110,6 +112,9 @@ public class NouleKeyboardView extends ConstraintLayout {
                 Button button = new Button(this.getContext());
                 button.setText(key);
                 button.setAllCaps(false);
+                button.setSingleLine(true);
+                button.setEllipsize(null);
+                button.setPadding(0, 0, 0, 0);
                 button.setOnTouchListener((v, event) -> {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         this.onKeyPress(key, () -> {
@@ -125,9 +130,9 @@ public class NouleKeyboardView extends ConstraintLayout {
 
                 float weight = 1.0f;
                 if (key.equals("Space")) {
-                    weight = 4.0f;
+                    weight = 5.0f;
                 }
-                else if (key.equals("Shift") || key.equals("Back")) {
+                else if (key.equals("Shift") || key.equals("Back") || key.equals("Enter")) {
                     weight = 1.3f;
                 }
                 else {
@@ -217,6 +222,13 @@ public class NouleKeyboardView extends ConstraintLayout {
             else if (key.equals("EN")) {
                 setCurKeyLayout(EN_LOWER_LAYOUT);
                 returnToLayout = null;
+            }
+            else if (key.equals("Enter")) {
+                long eventTime = SystemClock.uptimeMillis();
+                // Send ACTION_DOWN for the Enter key
+                ic.sendKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0));
+                // Send ACTION_UP for the Enter key
+                ic.sendKeyEvent(new KeyEvent(SystemClock.uptimeMillis(), eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER, 0));
             }
             else {
                 typeSymbol(ic, key);

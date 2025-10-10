@@ -8,38 +8,38 @@
         android:id="@+id/framelayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#DD1E1E1E"
         android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/row0"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:orientation="horizontal">
-        </LinearLayout>
+            android:orientation="horizontal" />
 
         <LinearLayout
             android:id="@+id/row1"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:orientation="horizontal"/>
+            android:orientation="horizontal" />
 
         <LinearLayout
             android:id="@+id/row2"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:orientation="horizontal"/>
+            android:orientation="horizontal" />
 
         <LinearLayout
             android:id="@+id/row3"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:orientation="horizontal"/>
+            android:orientation="horizontal" />
 
         <LinearLayout
             android:id="@+id/row4"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:orientation="horizontal"/>
+            android:orientation="horizontal" />
     </LinearLayout>
 
 </org.chocassye.noule.NouleKeyboardView>
