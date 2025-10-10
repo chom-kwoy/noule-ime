@@ -1,5 +1,7 @@
 package org.chocassye.noule;
 
+import static org.chocassye.noule.HangulData.getDisplayComposingText;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
@@ -15,6 +17,8 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.util.HashMap;
 
 public class NouleKeyboardView extends ConstraintLayout {
     private NouleIME imeService;
@@ -48,9 +52,13 @@ public class NouleKeyboardView extends ConstraintLayout {
         {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
         {",", "EN", "Space", "."},
     };
+    private final String HANGUL_CONS_KEYS = "ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄸㅃㅆㅉ";
+    private final String HANGUL_VOWEL_KEYS = "ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅔㅒㅖ";
+
     private String[][] curLayout = null;
     private String[][] returnToLayout = null;
     private Handler keyRepeatHandler;
+    private String curComposingText = "";
 
     public void initialize() {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
@@ -107,22 +115,54 @@ public class NouleKeyboardView extends ConstraintLayout {
                     }
                     return true;
                 });
+
+                float weight = 1.0f;
+                if (key.equals("Space")) {
+                    weight = 4.0f;
+                }
+                if (key.equals("Shift") || key.equals("Back")) {
+                    weight = 1.3f;
+                }
                 curRow.addView(button, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    0,
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    1.0f
+                    weight
                 ));
             }
         }
     }
 
-    private static boolean doBackspace(InputConnection ic) {
-        CharSequence selectedText = ic.getSelectedText(0);
-        if (selectedText == null || selectedText.length() == 0) {
-            return ic.deleteSurroundingText(1, 0);
+    private void typeSymbol(InputConnection ic, String key) {
+        if (HANGUL_CONS_KEYS.contains(key) || HANGUL_VOWEL_KEYS.contains(key)) {
+            curComposingText += key;
+
+            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
         }
         else {
-            return ic.commitText("", 1);
+            ic.finishComposingText();
+            curComposingText = "";
+            if (key.equals("Space")) {
+                ic.commitText(" ", 1);
+            }
+            else {
+                ic.commitText(key, 1);
+            }
+        }
+    }
+
+    private boolean doBackspace(InputConnection ic) {
+        if (!curComposingText.isEmpty()) {
+            curComposingText = curComposingText.substring(0, curComposingText.length() - 1);
+            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
+            return true;
+        }
+        else {
+            CharSequence selectedText = ic.getSelectedText(0);
+            if (selectedText == null || selectedText.length() == 0) {
+                return ic.deleteSurroundingText(1, 0);
+            } else {
+                return ic.commitText("", 1);
+            }
         }
     }
 
@@ -144,9 +184,6 @@ public class NouleKeyboardView extends ConstraintLayout {
                     }
                 }, INITIAL_REPEAT_INTERVAL);
                 doBackspace(ic);
-            }
-            else if (key.equals("Space")) {
-                ic.commitText(" ", 1);
             }
             else if (key.equals("Shift")) {
                 if (returnToLayout == null) {
@@ -172,7 +209,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                 returnToLayout = null;
             }
             else {
-                ic.commitText(key, 1);
+                typeSymbol(ic, key);
 
                 // Return back to un-shifted layout
                 if (returnToLayout != null) {
