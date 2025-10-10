@@ -57,6 +57,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private String[][] returnToLayout = null;
     private Handler keyRepeatHandler;
     private String curComposingText = "";
+    private int expectedSelEndPos = 0;
 
     public void initialize() {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
@@ -81,6 +82,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         this.imeService = ime;
         setCurKeyLayout(EN_LOWER_LAYOUT);
         this.imeService.setOnUpdateSelectionListener((oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd) -> {
+
             // If the current selection in the text view changes, we should
             // clear whatever candidate text we have.
             if (!curComposingText.isEmpty() && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
@@ -90,6 +92,18 @@ public class NouleKeyboardView extends ConstraintLayout {
                     this.curComposingText = "";
                 }
             }
+
+            // If the content of the edittext is changed (e.g. flushed),
+            // clear the composing buffer.
+            if (this.expectedSelEndPos != oldSelEnd) {
+                InputConnection ic = imeService.getCurrentInputConnection();
+                if (ic != null) {
+                    curComposingText = curComposingText.substring(curComposingText.length() - 1);
+                    ic.setComposingText(getDisplayComposingText(curComposingText), 1);
+                }
+            }
+
+            this.expectedSelEndPos = newSelEnd;
         });
     }
 
@@ -150,7 +164,6 @@ public class NouleKeyboardView extends ConstraintLayout {
     private void typeSymbol(InputConnection ic, String key) {
         if (HangulData.consInfoMap.containsKey(key) || HangulData.vowelInfoMap.containsKey(key)) {
             curComposingText += key;
-
             ic.setComposingText(getDisplayComposingText(curComposingText), 1);
         }
         else {

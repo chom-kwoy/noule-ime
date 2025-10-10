@@ -2,7 +2,6 @@ package org.chocassye.noule;
 
 import android.inputmethodservice.InputMethodService;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 
 public class NouleIME extends InputMethodService {
     public NouleIME() {
@@ -16,11 +15,6 @@ public class NouleIME extends InputMethodService {
         inputView.setParentService(this);
 
         return inputView;
-    }
-
-    @Override
-    public void onStartInput(EditorInfo attribute, boolean restarting) {
-        super.onStartInput(attribute, restarting);
     }
 
     public interface OnUpdateSelectionListener {
