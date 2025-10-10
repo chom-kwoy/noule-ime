@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Space;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,28 +28,28 @@ public class NouleKeyboardView extends ConstraintLayout {
     private final String[][] EN_LOWER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
-        {"a", "s", "d", "f", "g", "h", "j", "k", "l"},
+        {"space-.5", "a", "s", "d", "f", "g", "h", "j", "k", "l", "space-.5"},
         {"Shift", "z", "x", "c", "v", "b", "n", "m", "Back"},
         {",", "KO", "Space", ".", "Enter"},
     };
     private final String[][] EN_UPPER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
-        {"A", "S", "D", "F", "G", "H", "J", "K", "L"},
+        {"space-.5", "A", "S", "D", "F", "G", "H", "J", "K", "L", "space-.5"},
         {"Shift", "Z", "X", "C", "V", "B", "N", "M", "Back"},
         {",", "KO", "Space", ".", "Enter"},
     };
     private final String[][] KO_LOWER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ"},
-        {"ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ"},
+        {"space-.5", "ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ", "space-.5"},
         {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
         {",", "EN", "Space", ".", "Enter"},
     };
     private final String[][] KO_UPPER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"}, // TODO: add tone marks
-        {"ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ"},
+        {"space-.5", "ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ", "space-.5"},
         {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
         {",", "EN", "Space", ".", "Enter"},
     };
@@ -97,7 +98,7 @@ public class NouleKeyboardView extends ConstraintLayout {
             // clear the composing buffer.
             if (this.expectedSelEndPos != oldSelEnd) {
                 InputConnection ic = imeService.getCurrentInputConnection();
-                if (ic != null) {
+                if (ic != null && !curComposingText.isEmpty()) {
                     curComposingText = curComposingText.substring(curComposingText.length() - 1);
                     ic.setComposingText(getDisplayComposingText(curComposingText), 1);
                 }
@@ -123,40 +124,47 @@ public class NouleKeyboardView extends ConstraintLayout {
             LinearLayout curRow = rows[rowIdx];
             curRow.removeAllViews();
             for (String key : keys[rowIdx]) {
-                Button button = new Button(this.getContext());
-                button.setText(key);
-                button.setAllCaps(false);
-                button.setSingleLine(true);
-                button.setEllipsize(null);
-                button.setPadding(0, 0, 0, 0);
-                button.setOnTouchListener((v, event) -> {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        this.onKeyPress(key, () -> {
-                            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-                        });
-                    }
-                    else if (event.getAction() == MotionEvent.ACTION_UP) {
-                        // v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_UP);
-                        this.onKeyRelease(key);
-                    }
-                    return true;
-                });
-
-                float weight = 1.0f;
-                if (key.equals("Space")) {
-                    weight = 5.0f;
-                }
-                else if (key.equals("Shift") || key.equals("Back") || key.equals("Enter")) {
-                    weight = 1.3f;
+                if (key.startsWith("space-")) {
+                    float weight = Float.parseFloat(key.substring("space-".length()));
+                    curRow.addView(new Space(getContext()), new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        weight
+                    ));
                 }
                 else {
-                    button.setTextSize(20);
+                    Button button = new Button(getContext());
+                    button.setText(key);
+                    button.setAllCaps(false);
+                    button.setSingleLine(true);
+                    button.setEllipsize(null);
+                    button.setPadding(0, 0, 0, 0);
+                    button.setOnTouchListener((v, event) -> {
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            this.onKeyPress(key, () -> {
+                                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                            });
+                        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                            // v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_UP);
+                            this.onKeyRelease(key);
+                        }
+                        return true;
+                    });
+
+                    float weight = 1.0f;
+                    if (key.equals("Space")) {
+                        weight = 5.0f;
+                    } else if (key.equals("Shift") || key.equals("Back") || key.equals("Enter")) {
+                        weight = 1.3f;
+                    } else {
+                        button.setTextSize(20);
+                    }
+                    curRow.addView(button, new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        weight
+                    ));
                 }
-                curRow.addView(button, new LinearLayout.LayoutParams(
-                    0,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    weight
-                ));
             }
         }
     }
