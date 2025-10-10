@@ -13,5 +13,8 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+        <item name="materialButtonStyle">@style/Widget.MyApp.Button</item>
+    </style>
+    <style name="Widget.MyApp.Button" parent="Widget.MaterialComponents.Button">
     </style>
 </resources>

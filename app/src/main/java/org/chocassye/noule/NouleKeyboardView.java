@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -20,6 +21,8 @@ import android.widget.Space;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.google.android.material.button.MaterialButton;
 
 public class NouleKeyboardView extends ConstraintLayout {
     private NouleIME imeService;
@@ -65,17 +68,17 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     public NouleKeyboardView(@NonNull Context context) {
-        super(context);
+        super(context, null, R.style.Theme_Noule);
         initialize();
     }
 
     public NouleKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+        super(context, attrs, R.style.Theme_Noule);
         initialize();
     }
 
     public NouleKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        super(context, attrs, R.style.Theme_Noule);
         initialize();
     }
 
@@ -133,18 +136,23 @@ public class NouleKeyboardView extends ConstraintLayout {
                     ));
                 }
                 else {
-                    Button button = new Button(getContext());
+                    Button button = new MaterialButton(getContext());
                     button.setText(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);
                     button.setEllipsize(null);
                     button.setPadding(0, 0, 0, 0);
+                    button.setTextAlignment(TEXT_ALIGNMENT_CENTER);
+                    button.setGravity(Gravity.CENTER);
+                    button.setClickable(true);
                     button.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            v.setPressed(true);
                             this.onKeyPress(key, () -> {
                                 v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                             });
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                            v.setPressed(false);
                             // v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_UP);
                             this.onKeyRelease(key);
                         }
