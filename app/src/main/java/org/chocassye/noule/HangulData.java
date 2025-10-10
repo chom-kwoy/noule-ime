@@ -2,6 +2,7 @@ package org.chocassye.noule;
 
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HangulData {
     public static class ConsInfo {
@@ -25,6 +26,7 @@ public class HangulData {
     }
     public static final HashMap<String, VowelInfo> vowelInfoMap = new HashMap<>();
     public static final HashMap<String, String> composeMap = new HashMap<>();
+    public static final HashMap<String, String> toCompat = new HashMap<>();
 
     static {
         consInfoMap.put("ㄱ", new ConsInfo("ㄱ", "ᄀ", "ᆨ"));
@@ -184,6 +186,20 @@ public class HangulData {
         composeMap.put("ㅠㅖ", "ㆋ");
         composeMap.put("ㅠㅣ", "ㆌ");
         composeMap.put("ㆍㅣ", "ㆎ");
+
+        for (Map.Entry<String, ConsInfo> entry : consInfoMap.entrySet()) {
+            if (entry.getValue().leadingChar != null) {
+                toCompat.put(entry.getValue().leadingChar, entry.getKey());
+            }
+            if (entry.getValue().trailingChar != null) {
+                toCompat.put(entry.getValue().trailingChar, entry.getKey());
+            }
+        }
+        for (Map.Entry<String, VowelInfo> entry : vowelInfoMap.entrySet()) {
+            if (entry.getValue().vowelChar != null) {
+                toCompat.put(entry.getValue().vowelChar, entry.getKey());
+            }
+        }
     }
 
     private enum State {
@@ -338,5 +354,26 @@ public class HangulData {
 
     public static String getDisplayComposingText(String composingText) {
         return new StateMachine().run(composingText);
+    }
+
+    public static String decomposeHangul(String text) {
+        String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
+        StringBuilder result = new StringBuilder();
+        for (int index = 0; index < decomposed.length(); ++index) {
+            String ch = decomposed.substring(index, index + 1);
+            String compat = toCompat.get(ch);
+            if (compat != null) {
+                ch = compat;
+            }
+            result.append(ch);
+        }
+        return result.toString()
+            .replace("ㅘ", "ㅗㅏ")
+            .replace("ㅝ", "ㅜㅓ")
+            .replace("ㅟ", "ㅜㅣ")
+            .replace("ㅢ", "ㅡㅣ")
+            .replace("ㅚ", "ㅗㅣ")
+            .replace("ㅙ", "ㅗㅐ")
+            .replace("ㅞ", "ㅜㅔ");
     }
 }

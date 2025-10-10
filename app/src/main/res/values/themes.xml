@@ -16,5 +16,9 @@
         <item name="materialButtonStyle">@style/Widget.MyApp.Button</item>
     </style>
     <style name="Widget.MyApp.Button" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:insetLeft">2dp</item>
+        <item name="android:insetRight">2dp</item>
     </style>
 </resources>
