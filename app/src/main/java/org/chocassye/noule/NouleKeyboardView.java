@@ -25,15 +25,30 @@ public class NouleKeyboardView extends ConstraintLayout {
         {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
         {"a", "s", "d", "f", "g", "h", "j", "k", "l"},
         {"Shift", "z", "x", "c", "v", "b", "n", "m", "Back"},
-        {",", "Space", "."},
+        {",", "KO", "Space", "."},
     };
     private final String[][] EN_UPPER_LAYOUT = {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
         {"A", "S", "D", "F", "G", "H", "J", "K", "L"},
         {"Shift", "Z", "X", "C", "V", "B", "N", "M", "Back"},
-        {",", "Space", "."},
+        {",", "KO", "Space", "."},
     };
+    private final String[][] KO_LOWER_LAYOUT = {
+        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+        {"ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ"},
+        {"ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ"},
+        {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
+        {",", "EN", "Space", "."},
+    };
+    private final String[][] KO_UPPER_LAYOUT = {
+        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+        {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"},
+        {"ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ"},
+        {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
+        {",", "EN", "Space", "."},
+    };
+    private String[][] curLayout = null;
     private String[][] returnToLayout = null;
     private Handler keyRepeatHandler;
 
@@ -63,6 +78,8 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     @SuppressLint("ClickableViewAccessibility")
     public void setCurKeyLayout(String[][] keys) {
+        curLayout = keys;
+
         LinearLayout[] rows = {
             this.findViewById(R.id.row0),
             this.findViewById(R.id.row1),
@@ -133,12 +150,26 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
             else if (key.equals("Shift")) {
                 if (returnToLayout == null) {
-                    setCurKeyLayout(EN_UPPER_LAYOUT);
-                    returnToLayout = EN_LOWER_LAYOUT;
+                    if (curLayout == EN_LOWER_LAYOUT) {
+                        setCurKeyLayout(EN_UPPER_LAYOUT);
+                        returnToLayout = EN_LOWER_LAYOUT;
+                    }
+                    else if (curLayout == KO_LOWER_LAYOUT) {
+                        setCurKeyLayout(KO_UPPER_LAYOUT);
+                        returnToLayout = KO_LOWER_LAYOUT;
+                    }
                 } else {
                     setCurKeyLayout(returnToLayout);
                     returnToLayout = null;
                 }
+            }
+            else if (key.equals("KO")) {
+                setCurKeyLayout(KO_LOWER_LAYOUT);
+                returnToLayout = null;
+            }
+            else if (key.equals("EN")) {
+                setCurKeyLayout(EN_LOWER_LAYOUT);
+                returnToLayout = null;
             }
             else {
                 ic.commitText(key, 1);
