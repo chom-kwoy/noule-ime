@@ -65,7 +65,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
         {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"}, // TODO: add tone marks
         {"space-.5", "ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ", "space-.5"},
-        {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅸ", "ㅠ", "ㅜ", "ㅡ", "Back"},
+        {"Shift", "ᄼ", "ᄾ", "ᅎ", "ᅐ", "ᅔ", "ᅕ", "ㅸ", "Back"},
         {",", "EN", "Space", ".", "Enter"},
     };
 
