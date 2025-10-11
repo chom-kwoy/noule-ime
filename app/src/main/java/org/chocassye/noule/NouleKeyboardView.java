@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class NouleKeyboardView extends ConstraintLayout {
@@ -73,8 +74,10 @@ public class NouleKeyboardView extends ConstraintLayout {
         String hangul;
         String hanja;
         String[] meanings;
+        int freq;
     }
     private HashMap<String, Vector<HanjaDictEntry>> hanjaDict = new HashMap<>();
+    private HashMap<String, Integer> frequencyMap = new HashMap<>();
     boolean isHanjaDictInitialized = false;
 
     private String[][] curLayout = null;
@@ -84,6 +87,26 @@ public class NouleKeyboardView extends ConstraintLayout {
     private int expectedSelEndPos = 0;
     private SuggestionAdapter suggestionAdapter;
     private boolean ignoreOnce = false;
+
+    private void readFreqFile(String filename) throws IOException {
+        AssetManager assetManager = getContext().getAssets();
+        InputStream freqHanjaFile = assetManager.open(filename);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(freqHanjaFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.strip();
+            if (line.startsWith("#") || line.isEmpty()) {
+                continue;
+            }
+
+            String[] words = line.split(":");
+            String hanja = words[0];
+            int frequency = Integer.parseInt(words[1]) % 1000000;
+
+            frequencyMap.put(hanja, frequency);
+        }
+        freqHanjaFile.close();
+    }
 
     public void initialize() {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
@@ -104,6 +127,9 @@ public class NouleKeyboardView extends ConstraintLayout {
 
         Thread thread = new Thread(() -> {
             try {
+                readFreqFile("freq-hanja.txt");
+                readFreqFile("freq-hanjaeo.txt");
+
                 AssetManager assetManager = getContext().getAssets();
                 InputStream hanjaTxtFile = assetManager.open("hanja.txt");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(hanjaTxtFile));
@@ -121,12 +147,19 @@ public class NouleKeyboardView extends ConstraintLayout {
                     entry.hangul = hangul;
                     entry.hanja = words[1];
                     entry.meanings = words.length >= 3? words[2].split(", ") : null;
+                    entry.freq = frequencyMap.getOrDefault(entry.hanja, 0);
 
                     if (!hanjaDict.containsKey(hangul)) {
-                        hanjaDict.put(hangul, new Vector<HanjaDictEntry>());
+                        hanjaDict.put(hangul, new Vector<>());
                     }
                     hanjaDict.get(hangul).add(entry);
                 }
+                hanjaTxtFile.close();
+
+                for (Map.Entry<String, Vector<HanjaDictEntry>> item : hanjaDict.entrySet()) {
+                    item.getValue().sort((a, b) -> b.freq - a.freq);
+                }
+
                 isHanjaDictInitialized = true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
