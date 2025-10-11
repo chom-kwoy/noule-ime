@@ -4,34 +4,82 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import java.text.Normalizer;
-
 public class HangulDataTest {
     @Test
     public void hangulCompose() {
         assertEquals(
-            Normalizer.normalize("가", Normalizer.Form.NFD),
+            "가",
             HangulData.getDisplayComposingText("ㄱㅏ")
         );
         assertEquals(
-            Normalizer.normalize("간", Normalizer.Form.NFD),
+            "간",
             HangulData.getDisplayComposingText("ㄱㅏㄴ")
         );
         assertEquals(
-            Normalizer.normalize("가나", Normalizer.Form.NFD),
+            "가나",
             HangulData.getDisplayComposingText("ㄱㅏㄴㅏ")
         );
         assertEquals(
-            Normalizer.normalize("간다", Normalizer.Form.NFD),
+            "간다",
             HangulData.getDisplayComposingText("ㄱㅏㄴㄷㅏ")
         );
         assertEquals(
-            Normalizer.normalize("간담", Normalizer.Form.NFD),
+            "간담",
             HangulData.getDisplayComposingText("ㄱㅏㄴㄷㅏㅁ")
         );
         assertEquals(
-            Normalizer.normalize("담ㅎ", Normalizer.Form.NFD),
-            HangulData.getDisplayComposingText("ㄷㅏㅁㅎ")
+            "ᄋᆢ",
+            HangulData.getDisplayComposingText("ㅇㆍㆍ")
+        );
+        assertEquals(
+            "ᄋᆢᆨ",
+            HangulData.getDisplayComposingText("ㅇㆍㆍㄱ")
+        );
+    }
+    @Test
+    public void hangulComposeUnfinished() {
+        assertEquals(
+            "담ㅍ",
+            HangulData.getDisplayComposingText("ㄷㅏㅁㅍ")
+        );
+    }
+    @Test
+    public void hangulComposeIncomplete() {
+        assertEquals(
+            "닾ㅍ파",
+            HangulData.getDisplayComposingText("ㄷㅏㅍㅍㅍㅏ")
+        );
+        assertEquals(
+            "닾ㅍㅋ파",
+            HangulData.getDisplayComposingText("ㄷㅏㅍㅍㅋㅍㅏ")
+        );
+    }
+    @Test
+    public void hangulComposeIncomplete2() {
+        assertEquals(
+            "ㅣ아",
+            HangulData.getDisplayComposingText("ㅣㅇㅏ")
+        );
+    }
+    @Test
+    public void hangulComposeIncomplete3() {
+        assertEquals(
+            "아ㅏㅓㅓ",
+            HangulData.getDisplayComposingText("ㅇㅏㅏㅓㅓ")
+        );
+    }
+    @Test
+    public void hangulComposeIncomplete4() {
+        assertEquals(
+            "ㅓ아",
+            HangulData.getDisplayComposingText("ㅓㅇㅏ")
+        );
+    }
+    @Test
+    public void hangulComposeIncomplete5() {
+        assertEquals(
+            "서ㅓ아",
+            HangulData.getDisplayComposingText("ㅅㅓㅓㅇㅏ")
         );
     }
 }

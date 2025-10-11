@@ -89,8 +89,9 @@ public class NouleKeyboardView extends ConstraintLayout {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
 
         String[] punctuations = {
-            "?", ":", "~", "!", "@", "#", "$", "%", "^", "&", "*",
+            "?", "!", ":", "~", "-", "@", "#", "$", "%", "^", "&", "*",
             "(", ")", "'", "\"", "/", "\\", "|", "`", "{", "}", "[", "]",
+            "<", ">", "_", "+", "=",
         };
         Vector<HanjaDictEntry> dotEntries = new Vector<>();
         for (String punct : punctuations) {
@@ -393,6 +394,10 @@ public class NouleKeyboardView extends ConstraintLayout {
                 returnToLayout = null;
             }
             else if (key.equals("Enter")) {
+                ic.finishComposingText();
+                curComposingText = "";
+                updateSuggestionBar(ic);
+
                 long eventTime = SystemClock.uptimeMillis();
                 // Send ACTION_DOWN for the Enter key
                 ic.sendKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0));
