@@ -16,6 +16,7 @@ import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
 import android.widget.Button;
@@ -336,18 +337,39 @@ public class NouleKeyboardView extends ConstraintLayout {
 
         for (int rowIdx = 0; rowIdx < rows.length; ++rowIdx) {
             LinearLayout curRow = rows[rowIdx];
-            curRow.removeAllViews();
+            if (curRow.getChildCount() != keys[rowIdx].length) {
+                curRow.removeAllViews();
+                for (String key : keys[rowIdx]) {
+                    if (key.startsWith("space-")) {
+                        curRow.addView(new Space(getContext()), new LinearLayout.LayoutParams(
+                            0,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            1.0f
+                        ));
+                    }
+                    else {
+                        Button button = new KeyboardButton(getContext());
+                        curRow.addView(button, new LinearLayout.LayoutParams(
+                            0,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            1.0f
+                        ));
+                    }
+                }
+            }
+            int index = 0;
             for (String key : keys[rowIdx]) {
                 if (key.startsWith("space-")) {
                     float weight = Float.parseFloat(key.substring("space-".length()));
-                    curRow.addView(new Space(getContext()), new LinearLayout.LayoutParams(
+                    Space space = (Space) curRow.getChildAt(index);
+                    space.setLayoutParams(new LinearLayout.LayoutParams(
                         0,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         weight
                     ));
                 }
                 else {
-                    Button button = new KeyboardButton(getContext());
+                    Button button = (Button) curRow.getChildAt(index);
                     button.setText(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);
@@ -381,13 +403,13 @@ public class NouleKeyboardView extends ConstraintLayout {
                     } else {
                         button.setTextSize(20);
                     }
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    button.setLayoutParams(new LinearLayout.LayoutParams(
                         0,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         weight
-                    );
-                    curRow.addView(button, params);
+                    ));
                 }
+                index += 1;
             }
         }
     }
