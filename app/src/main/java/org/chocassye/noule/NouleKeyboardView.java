@@ -261,7 +261,7 @@ public class NouleKeyboardView extends ConstraintLayout {
             ic.finishComposingText();
             this.curComposingText = newComposingText;
             if (!newComposingText.isEmpty()) {
-                ic.setComposingText(".", 1);
+                ic.setComposingText(newComposingText, 1);
             }
             updateSuggestionBar();
         }
@@ -308,6 +308,14 @@ public class NouleKeyboardView extends ConstraintLayout {
                     suggestionEntry.output = punct;
                     entries.add(suggestionEntry);
                 }
+            }
+            else if (isAlphabetic(curComposingText)) {
+                entries = new Vector<>();
+                SuggestionAdapter.SuggestionEntry suggestionEntry =
+                        new SuggestionAdapter.SuggestionEntry();
+                suggestionEntry.input = curComposingText;
+                suggestionEntry.output = ManchuData.convertToManchu(curComposingText);
+                entries.add(suggestionEntry);
             }
         }
         suggestionAdapter.setData(entries);
@@ -384,15 +392,31 @@ public class NouleKeyboardView extends ConstraintLayout {
         }
     }
 
+    public static boolean isAlphabetic(String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        return s.matches("[a-zA-Z]+");
+    }
+
     private void typeSymbol(InputConnection ic, String key) {
         if (HangulData.consInfoMap.containsKey(key) || HangulData.vowelInfoMap.containsKey(key)) {
-            if (curComposingText.equals(".")) {
-                ic.finishComposingText();
-                curComposingText = "";
+            if (!HangulData.isHangulString(curComposingText)) {
+                finishComposing(ic, key);
                 ignoreOnce = true;
             }
-
-            updateComposingText(ic, curComposingText + key);
+            else {
+                updateComposingText(ic, curComposingText + key);
+            }
+        }
+        else if (key.length() == 1 && isAlphabetic(key)) {
+            if (!curComposingText.isEmpty() && !isAlphabetic(curComposingText)) {
+                finishComposing(ic, key);
+                ignoreOnce = true;
+            }
+            else {
+                updateComposingText(ic, curComposingText + key);
+            }
         }
         else {
             if (key.equals(".")) {
