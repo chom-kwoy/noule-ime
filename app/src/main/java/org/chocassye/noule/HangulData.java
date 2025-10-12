@@ -407,6 +407,8 @@ public class HangulData {
         composeMap.put("ㅅㅌ", "ᄹ");
         composeMap.put("ㅅㅍ", "ᄺ");
         composeMap.put("ㅅㅎ", "ᄻ");
+        composeMap.put("ᄼᄼ", "ᄽ");
+        composeMap.put("ᄾᄾ", "ᄿ");
         composeMap.put("ㅇㄱ", "ᅁ");
         composeMap.put("ㅇㄷ", "ᅂ");
         composeMap.put("ㅇㅁ", "ᅃ");
@@ -418,6 +420,7 @@ public class HangulData {
         composeMap.put("ㅇㅌ", "ᅊ");
         composeMap.put("ㅇㅍ", "ᅋ");
         composeMap.put("ㅈㅇ", "ᅍ");
+        composeMap.put("ᅎᅎ", "ᅏ");
         composeMap.put("ㅊㅋ", "ᅒ");
         composeMap.put("ㅊㅎ", "ᅓ");
         composeMap.put("ㅍㅂ", "ᅖ");
