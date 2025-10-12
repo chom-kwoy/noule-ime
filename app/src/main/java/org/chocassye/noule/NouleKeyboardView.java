@@ -39,36 +39,51 @@ import java.util.Vector;
 
 public class NouleKeyboardView extends ConstraintLayout {
     private NouleIME imeService;
+
     private final int INITIAL_REPEAT_INTERVAL = 400;
     private final int REPEAT_INTERVAL = 50;
-    private final String[][] EN_LOWER_LAYOUT = {
-        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
-        {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
-        {"space-.5", "a", "s", "d", "f", "g", "h", "j", "k", "l", "space-.5"},
-        {"Shift", "z", "x", "c", "v", "b", "n", "m", "Back"},
-        {",", "KO", "Space", ".", "Enter"},
+
+    public static class LayoutSet {
+        public String[][] lowerLayout;
+        public String[][] upperLayout;
     };
-    private final String[][] EN_UPPER_LAYOUT = {
-        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
-        {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
-        {"space-.5", "A", "S", "D", "F", "G", "H", "J", "K", "L", "space-.5"},
-        {"Shift", "Z", "X", "C", "V", "B", "N", "M", "Back"},
-        {",", "KO", "Space", ".", "Enter"},
-    };
-    private final String[][] KO_LOWER_LAYOUT = {
-        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
-        {"ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ"},
-        {"space-.5", "ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ", "space-.5"},
-        {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
-        {",", "EN", "Space", ".", "Enter"},
-    };
-    private final String[][] KO_UPPER_LAYOUT = {
-        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
-        {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"}, // TODO: add tone marks
-        {"space-.5", "ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ", "space-.5"},
-        {"Shift", "ᄼ", "ᄾ", "ᅎ", "ᅐ", "ᅔ", "ᅕ", "ㅸ", "Back"},
-        {",", "EN", "Space", ".", "Enter"},
-    };
+
+    private static final LayoutSet EN_LAYOUT = new LayoutSet();
+    private static final LayoutSet KO_LAYOUT = new LayoutSet();
+    static {
+        EN_LAYOUT.lowerLayout = new String[][]{
+            {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+            {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
+            {"space-.5", "a", "s", "d", "f", "g", "h", "j", "k", "l", "space-.5"},
+            {"Shift", "z", "x", "c", "v", "b", "n", "m", "Back"},
+            {",", "KO", "Space", ".", "Enter"},
+        };
+        EN_LAYOUT.upperLayout = new String[][]{
+            {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+            {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
+            {"space-.5", "A", "S", "D", "F", "G", "H", "J", "K", "L", "space-.5"},
+            {"Shift", "Z", "X", "C", "V", "B", "N", "M", "Back"},
+            {",", "KO", "Space", ".", "Enter"},
+        };
+
+        KO_LAYOUT.lowerLayout = new String[][]{
+            {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+            {"ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ"},
+            {"space-.5", "ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ", "space-.5"},
+            {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
+            {",", "EN", "Space", ".", "Enter"},
+        };
+        KO_LAYOUT.upperLayout = new String[][]{
+            {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+            {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "ㅕ", "ㅑ", "ㅒ", "ㅖ"}, // TODO: add tone marks
+            {"space-.5", "ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ", "space-.5"},
+            {"Shift", "ᄼ", "ᄾ", "ᅎ", "ᅐ", "ᅔ", "ᅕ", "ㅸ", "Back"},
+            {",", "EN", "Space", ".", "Enter"},
+        };
+    }
+
+    private LayoutSet curLayoutSet;
+    private String[][] curLayout;
 
     public static class HanjaDictEntry {
         String hangul;
@@ -80,8 +95,6 @@ public class NouleKeyboardView extends ConstraintLayout {
     private HashMap<String, Integer> frequencyMap = new HashMap<>();
     boolean isHanjaDictInitialized = false;
 
-    private String[][] curLayout = null;
-    private String[][] returnToLayout = null;
     private Handler keyRepeatHandler;
     private String curComposingText = "";
     private int expectedSelEndPos = 0;
@@ -184,9 +197,53 @@ public class NouleKeyboardView extends ConstraintLayout {
         initialize();
     }
 
+    public void switchLayoutSet(LayoutSet newLayoutSet) {
+        this.curLayoutSet = newLayoutSet;
+        setCurKeyLayout(newLayoutSet.lowerLayout);
+    }
+
+    private void finishComposing(InputConnection ic) {
+        finishComposing(ic, "");
+    }
+
+    private void finishComposing(InputConnection ic, String newComposingText) {
+        if (ic != null) {
+            ic.finishComposingText();
+            this.curComposingText = newComposingText;
+            if (!newComposingText.isEmpty()) {
+                ic.setComposingText(".", 1);
+            }
+            updateSuggestionBar();
+        }
+    }
+
+    private void updateComposingText(InputConnection ic, String newComposingText) {
+        if (ic != null) {
+            curComposingText = newComposingText;
+            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
+            updateSuggestionBar();
+        }
+    }
+
+    private void updateSuggestionBar() {
+        if (isHanjaDictInitialized && !curComposingText.isEmpty()) {
+            String text = getDisplayComposingText(curComposingText);
+            Vector<HanjaDictEntry> lookUp = hanjaDict.get(text);
+            if (lookUp != null) {
+                suggestionAdapter.setData(lookUp);
+                suggestionAdapter.notifyDataSetChanged();
+                return;
+            }
+        }
+        suggestionAdapter.setData(new Vector<>());
+        suggestionAdapter.notifyDataSetChanged();
+    }
+
     public void setParentService(NouleIME ime) {
         this.imeService = ime;
-        setCurKeyLayout(EN_LOWER_LAYOUT);
+
+        switchLayoutSet(EN_LAYOUT);
+
         this.imeService.setOnUpdateSelectionListener((oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd) -> {
 
             // If the current selection in the text view changes, we should
@@ -199,11 +256,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                 else {
                     Log.i("MYLOG", "current selection in the text view changed, clear whatever candidate text we have");
                     InputConnection ic = imeService.getCurrentInputConnection();
-                    if (ic != null) {
-                        ic.finishComposingText();
-                        this.curComposingText = "";
-                        updateSuggestionBar(ic);
-                    }
+                    finishComposing(ic);
                 }
             }
 
@@ -213,9 +266,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                 Log.i("MYLOG", "content of the edittext is changed, clear the composing buffer");
                 InputConnection ic = imeService.getCurrentInputConnection();
                 if (ic != null && !curComposingText.isEmpty()) {
-                    curComposingText = curComposingText.substring(curComposingText.length() - 1);
-                    ic.setComposingText(getDisplayComposingText(curComposingText), 1);
-                    updateSuggestionBar(ic);
+                    updateComposingText(ic, curComposingText.substring(curComposingText.length() - 1));
                 }
             }
 
@@ -242,9 +293,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     ic.setComposingText("", 1);
                     ic.commitText(entry.hanja, 1);
 
-                    curComposingText = curComposingText.substring(decomposedHangul.length());
-                    ic.setComposingText(getDisplayComposingText(curComposingText), 1);
-                    updateSuggestionBar(ic);
+                    updateComposingText(ic, curComposingText.substring(decomposedHangul.length()));
                 }
             }
             else if (event.getAction() == MotionEvent.ACTION_CANCEL) {
@@ -255,7 +304,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    public void setCurKeyLayout(String[][] keys) {
+    private void setCurKeyLayout(String[][] keys) {
         curLayout = keys;
 
         LinearLayout[] rows = {
@@ -328,22 +377,16 @@ public class NouleKeyboardView extends ConstraintLayout {
                 curComposingText = "";
                 ignoreOnce = true;
             }
-            curComposingText += key;
-            Log.i("MYLOG", String.format("curComposingText: '%s'", curComposingText));
-            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
-            updateSuggestionBar(ic);
+
+            updateComposingText(ic, curComposingText + key);
         }
         else {
-            ic.finishComposingText();
-            curComposingText = "";
             if (key.equals(".")) {
-                curComposingText = ".";
-                ic.setComposingText(".", 1);
-                updateSuggestionBar(ic);
+                finishComposing(ic, ".");
                 ignoreOnce = true;
             }
             else {
-                updateSuggestionBar(ic);
+                finishComposing(ic);
                 if (key.equals("Space")) {
                     ic.commitText(" ", 1);
                 } else {
@@ -353,25 +396,9 @@ public class NouleKeyboardView extends ConstraintLayout {
         }
     }
 
-    private void updateSuggestionBar(InputConnection ic) {
-        if (isHanjaDictInitialized && !curComposingText.isEmpty()) {
-            String text = getDisplayComposingText(curComposingText);
-            Vector<HanjaDictEntry> lookUp = hanjaDict.get(text);
-            if (lookUp != null) {
-                suggestionAdapter.setData(lookUp);
-                suggestionAdapter.notifyDataSetChanged();
-                return;
-            }
-        }
-        suggestionAdapter.setData(new Vector<>());
-        suggestionAdapter.notifyDataSetChanged();
-    }
-
     private boolean doBackspace(InputConnection ic) {
         if (!curComposingText.isEmpty()) {
-            curComposingText = curComposingText.substring(0, curComposingText.length() - 1);
-            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
-            updateSuggestionBar(ic);
+            updateComposingText(ic, curComposingText.substring(0, curComposingText.length() - 1));
             return true;
         }
         else {
@@ -384,7 +411,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         }
     }
 
-    public void onKeyPress(String key, Runnable makeHapticFeedback) {
+    private void onKeyPress(String key, Runnable makeHapticFeedback) {
         if (imeService != null) {
             InputConnection ic = imeService.getCurrentInputConnection();
 
@@ -404,32 +431,21 @@ public class NouleKeyboardView extends ConstraintLayout {
                 doBackspace(ic);
             }
             else if (key.equals("Shift")) {
-                if (returnToLayout == null) {
-                    if (curLayout == EN_LOWER_LAYOUT) {
-                        setCurKeyLayout(EN_UPPER_LAYOUT);
-                        returnToLayout = EN_LOWER_LAYOUT;
-                    }
-                    else if (curLayout == KO_LOWER_LAYOUT) {
-                        setCurKeyLayout(KO_UPPER_LAYOUT);
-                        returnToLayout = KO_LOWER_LAYOUT;
-                    }
-                } else {
-                    setCurKeyLayout(returnToLayout);
-                    returnToLayout = null;
+                if (curLayout == curLayoutSet.lowerLayout) {
+                    setCurKeyLayout(curLayoutSet.upperLayout);
+                }
+                else {
+                    setCurKeyLayout(curLayoutSet.lowerLayout);
                 }
             }
             else if (key.equals("KO")) {
-                setCurKeyLayout(KO_LOWER_LAYOUT);
-                returnToLayout = null;
+                switchLayoutSet(KO_LAYOUT);
             }
             else if (key.equals("EN")) {
-                setCurKeyLayout(EN_LOWER_LAYOUT);
-                returnToLayout = null;
+                switchLayoutSet(EN_LAYOUT);
             }
             else if (key.equals("Enter")) {
-                ic.finishComposingText();
-                curComposingText = "";
-                updateSuggestionBar(ic);
+                finishComposing(ic);
 
                 long eventTime = SystemClock.uptimeMillis();
                 // Send ACTION_DOWN for the Enter key
@@ -441,15 +457,14 @@ public class NouleKeyboardView extends ConstraintLayout {
                 typeSymbol(ic, key);
 
                 // Return back to un-shifted layout
-                if (returnToLayout != null) {
-                    setCurKeyLayout(returnToLayout);
-                    returnToLayout = null;
+                if (curLayout == curLayoutSet.upperLayout) {
+                    setCurKeyLayout(curLayoutSet.lowerLayout);
                 }
             }
         }
     }
 
-    public void onKeyRelease(String key) {
+    private void onKeyRelease(String key) {
         if (key.equals("Back")) {
             keyRepeatHandler.removeCallbacksAndMessages(null);
         }
