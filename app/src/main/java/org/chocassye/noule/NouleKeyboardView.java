@@ -75,7 +75,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         };
         KO_LAYOUT.upperLayout = new String[][]{
             {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
-            {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "〮", "〯", "ㅒ", "ㅖ"}, // TODO: add tone marks
+            {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "〮", "〯", "ㅒ", "ㅖ"},
             {"space-.5", "ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ", "space-.5"},
             {"Shift", "ᄼ", "ᄾ", "ᅎ", "ᅐ", "ᅔ", "ᅕ", "ㅸ", "Back"},
             {",", "EN", "Space", ".", "Enter"},
