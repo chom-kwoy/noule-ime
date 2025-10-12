@@ -38,10 +38,15 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
         }
     }
 
-    private Vector<NouleKeyboardView.HanjaDictEntry> entries = new Vector<>();
+    public static class SuggestionEntry {
+        String input;
+        String output;
+    }
+
+    private Vector<SuggestionEntry> entries = null;
 
     public interface OnTouchListener {
-        boolean onTouch(View v, MotionEvent event, NouleKeyboardView.HanjaDictEntry entry);
+        boolean onTouch(View v, MotionEvent event, SuggestionEntry entry);
     }
     private OnTouchListener onTouchListener = null;
 
@@ -49,7 +54,7 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
         super();
     }
 
-    public void setData(Vector<NouleKeyboardView.HanjaDictEntry> entries) {
+    public void setData(Vector<SuggestionEntry> entries) {
         this.entries = entries;
     }
 
@@ -66,14 +71,19 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         Chip chip = holder.getChip();
-        NouleKeyboardView.HanjaDictEntry entry = entries.get(position);
-        chip.setText(entry.hanja);
+        if (entries != null) {
+            SuggestionEntry entry = entries.get(position);
+            chip.setText(entry.output);
+        }
         chip.setTextSize(18);
         holder.setPosition(position);
     }
 
     @Override
     public int getItemCount() {
+        if (entries == null) {
+            return 0;
+        }
         return entries.size();
     }
 
@@ -82,7 +92,7 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
     }
 
     private boolean onTouchEvent(View v, MotionEvent event, int position) {
-        if (onTouchListener == null) {
+        if (entries == null || onTouchListener == null) {
             return false;
         }
         else if (position < entries.size()) {

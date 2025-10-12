@@ -30,6 +30,7 @@ public class HangulData {
     public static final HashMap<String, VowelInfo> vowelInfoMap = new HashMap<>();
     public static final HashMap<String, String> composeMap = new HashMap<>();
     public static final HashMap<String, String> toCompat = new HashMap<>();
+    public static final HashSet<String> hangulSet = new HashSet<>();
     public static final HashSet<String> leadingJamos = new HashSet<>();
     public static final HashSet<String> vowelJamos = new HashSet<>();
     public static final HashSet<String> trailingJamos = new HashSet<>();
@@ -572,19 +573,24 @@ public class HangulData {
         composeMap.put("ㅍㅌ", "ퟻ");
 
         for (Map.Entry<String, ConsInfo> entry : consInfoMap.entrySet()) {
+            hangulSet.add(entry.getKey());
             if (entry.getValue().leadingChar != null) {
                 toCompat.put(entry.getValue().leadingChar, entry.getKey());
                 leadingJamos.add(entry.getValue().leadingChar);
+                hangulSet.add(entry.getValue().leadingChar);
             }
             if (entry.getValue().trailingChar != null) {
                 toCompat.put(entry.getValue().trailingChar, entry.getKey());
                 trailingJamos.add(entry.getValue().trailingChar);
+                hangulSet.add(entry.getValue().trailingChar);
             }
         }
         for (Map.Entry<String, VowelInfo> entry : vowelInfoMap.entrySet()) {
+            hangulSet.add(entry.getKey());
             if (entry.getValue().vowelChar != null) {
                 toCompat.put(entry.getValue().vowelChar, entry.getKey());
                 vowelJamos.add(entry.getValue().vowelChar);
+                hangulSet.add(entry.getValue().vowelChar);
             }
         }
     }
@@ -786,11 +792,21 @@ public class HangulData {
         return string;
     }
 
-    public static String getDisplayComposingText(String composingText) {
-        if (composingText.equals(".")) {
-            return ".";
+    public static boolean isHangulString(String someText) {
+        for (int index = 0; index < someText.length(); ++index) {
+            String ch = someText.substring(index, index + 1);
+            if (!hangulSet.contains(ch)) {
+                return false;
+            }
         }
-        return new StateMachine().run(composingText);
+        return true;
+    }
+
+    public static String getDisplayComposingText(String composingText) {
+        if (isHangulString(composingText)) {
+            return new StateMachine().run(composingText);
+        }
+        return composingText;
     }
 
     public static String decomposeHangul(String text) {

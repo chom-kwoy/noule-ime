@@ -2,6 +2,7 @@ package org.chocassye.noule;
 
 import static org.chocassye.noule.HangulData.decomposeHangul;
 import static org.chocassye.noule.HangulData.getDisplayComposingText;
+import static org.chocassye.noule.HangulData.isHangulString;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -85,7 +86,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private LayoutSet curLayoutSet;
     private String[][] curLayout;
 
-    public static class HanjaDictEntry {
+    private static class HanjaDictEntry {
         String hangul;
         String hanja;
         String[] meanings;
@@ -123,20 +124,6 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     public void initialize() {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
-
-        String[] punctuations = {
-            "?", "!", ":", "~", "-", "@", "#", "$", "%", "^", "&", "*",
-            "(", ")", "'", "\"", "/", "\\", "|", "`", "{", "}", "[", "]",
-            "<", ">", "_", "+", "=",
-        };
-        Vector<HanjaDictEntry> dotEntries = new Vector<>();
-        for (String punct : punctuations) {
-            HanjaDictEntry entry = new HanjaDictEntry();
-            entry.hangul = ".";
-            entry.hanja = punct;
-            dotEntries.add(entry);
-        }
-        hanjaDict.put(".", dotEntries);
 
         Thread thread = new Thread(() -> {
             try {
@@ -179,7 +166,6 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
         });
         thread.start();
-
     }
 
     public NouleKeyboardView(@NonNull Context context) {
@@ -195,48 +181,6 @@ public class NouleKeyboardView extends ConstraintLayout {
     public NouleKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, R.style.Theme_Noule);
         initialize();
-    }
-
-    public void switchLayoutSet(LayoutSet newLayoutSet) {
-        this.curLayoutSet = newLayoutSet;
-        setCurKeyLayout(newLayoutSet.lowerLayout);
-    }
-
-    private void finishComposing(InputConnection ic) {
-        finishComposing(ic, "");
-    }
-
-    private void finishComposing(InputConnection ic, String newComposingText) {
-        if (ic != null) {
-            ic.finishComposingText();
-            this.curComposingText = newComposingText;
-            if (!newComposingText.isEmpty()) {
-                ic.setComposingText(".", 1);
-            }
-            updateSuggestionBar();
-        }
-    }
-
-    private void updateComposingText(InputConnection ic, String newComposingText) {
-        if (ic != null) {
-            curComposingText = newComposingText;
-            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
-            updateSuggestionBar();
-        }
-    }
-
-    private void updateSuggestionBar() {
-        if (isHanjaDictInitialized && !curComposingText.isEmpty()) {
-            String text = getDisplayComposingText(curComposingText);
-            Vector<HanjaDictEntry> lookUp = hanjaDict.get(text);
-            if (lookUp != null) {
-                suggestionAdapter.setData(lookUp);
-                suggestionAdapter.notifyDataSetChanged();
-                return;
-            }
-        }
-        suggestionAdapter.setData(new Vector<>());
-        suggestionAdapter.notifyDataSetChanged();
     }
 
     public void setParentService(NouleIME ime) {
@@ -274,11 +218,12 @@ public class NouleKeyboardView extends ConstraintLayout {
         });
 
         RecyclerView recyclerView = findViewById(R.id.suggestionRecycler);
+
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(manager);
+
         suggestionAdapter = new SuggestionAdapter();
-        recyclerView.setAdapter(suggestionAdapter);
         suggestionAdapter.setOnTouchListener((v, event, entry) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 v.setPressed(true);
@@ -287,13 +232,12 @@ public class NouleKeyboardView extends ConstraintLayout {
             else if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.setPressed(false);
                 InputConnection ic = imeService.getCurrentInputConnection();
-                String decomposedHangul = decomposeHangul(entry.hangul);
 
-                if (ic != null && curComposingText.startsWith(decomposedHangul)) {
+                if (ic != null && curComposingText.startsWith(entry.input)) {
                     ic.setComposingText("", 1);
-                    ic.commitText(entry.hanja, 1);
+                    ic.commitText(entry.output, 1);
 
-                    updateComposingText(ic, curComposingText.substring(decomposedHangul.length()));
+                    updateComposingText(ic, curComposingText.substring(entry.input.length()));
                 }
             }
             else if (event.getAction() == MotionEvent.ACTION_CANCEL) {
@@ -301,6 +245,75 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
             return true;
         });
+
+        recyclerView.setAdapter(suggestionAdapter);
+    }
+
+    public void switchLayoutSet(LayoutSet newLayoutSet) {
+        this.curLayoutSet = newLayoutSet;
+        setCurKeyLayout(newLayoutSet.lowerLayout);
+    }
+
+    private void finishComposing(InputConnection ic) {
+        finishComposing(ic, "");
+    }
+
+    private void finishComposing(InputConnection ic, String newComposingText) {
+        if (ic != null) {
+            ic.finishComposingText();
+            this.curComposingText = newComposingText;
+            if (!newComposingText.isEmpty()) {
+                ic.setComposingText(".", 1);
+            }
+            updateSuggestionBar();
+        }
+    }
+
+    private void updateComposingText(InputConnection ic, String newComposingText) {
+        if (ic != null) {
+            curComposingText = newComposingText;
+            ic.setComposingText(getDisplayComposingText(curComposingText), 1);
+            updateSuggestionBar();
+        }
+    }
+
+    private void updateSuggestionBar() {
+        Vector<SuggestionAdapter.SuggestionEntry> entries = null;
+        if (!curComposingText.isEmpty()) {
+            if (isHangulString(curComposingText)) {
+                if (isHanjaDictInitialized) {
+                    String text = getDisplayComposingText(curComposingText);
+                    Vector<HanjaDictEntry> lookUp = hanjaDict.get(text);
+                    if (lookUp != null) {
+                        entries = new Vector<>();
+                        for (HanjaDictEntry entry : lookUp) {
+                            SuggestionAdapter.SuggestionEntry suggestionEntry =
+                                    new SuggestionAdapter.SuggestionEntry();
+                            suggestionEntry.input = curComposingText;
+                            suggestionEntry.output = entry.hanja;
+                            entries.add(suggestionEntry);
+                        }
+                    }
+                }
+            }
+            else if (curComposingText.equals(".")) {
+                String[] punctuations = {
+                    "?", "!", ":", "~", "-", "@", "#", "$", "%", "^", "&", "*",
+                    "(", ")", "'", "\"", "/", "\\", "|", "`", "{", "}", "[", "]",
+                    "<", ">", "_", "+", "=",
+                };
+                entries = new Vector<>();
+                for (String punct : punctuations) {
+                    SuggestionAdapter.SuggestionEntry suggestionEntry =
+                            new SuggestionAdapter.SuggestionEntry();
+                    suggestionEntry.input = curComposingText;
+                    suggestionEntry.output = punct;
+                    entries.add(suggestionEntry);
+                }
+            }
+        }
+        suggestionAdapter.setData(entries);
+        suggestionAdapter.notifyDataSetChanged();
     }
 
     @SuppressLint("ClickableViewAccessibility")
