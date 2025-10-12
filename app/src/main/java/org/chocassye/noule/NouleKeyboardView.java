@@ -1,12 +1,12 @@
 package org.chocassye.noule;
 
-import static org.chocassye.noule.HangulData.decomposeHangul;
 import static org.chocassye.noule.HangulData.getDisplayComposingText;
 import static org.chocassye.noule.HangulData.isHangulString;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -27,8 +27,6 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.button.MaterialButton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -341,7 +339,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     ));
                 }
                 else {
-                    Button button = new MaterialButton(getContext());
+                    Button button = new KeyboardButton(getContext());
                     button.setText(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);
@@ -357,8 +355,11 @@ public class NouleKeyboardView extends ConstraintLayout {
                                 v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                             });
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                            v.performClick();
                             v.setPressed(false);
-                            // v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_UP);
+                            if (Build.VERSION.SDK_INT >= 27) {
+                                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
+                            }
                             this.onKeyRelease(key);
                         }
                         return true;

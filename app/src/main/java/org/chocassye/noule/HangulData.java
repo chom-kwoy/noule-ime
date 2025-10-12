@@ -808,25 +808,4 @@ public class HangulData {
         }
         return composingText;
     }
-
-    public static String decomposeHangul(String text) {
-        String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
-        StringBuilder result = new StringBuilder();
-        for (int index = 0; index < decomposed.length(); ++index) {
-            String ch = decomposed.substring(index, index + 1);
-            String compat = toCompat.get(ch);
-            if (compat != null) {
-                ch = compat;
-            }
-            result.append(ch);
-        }
-        return result.toString()
-            .replace("ㅘ", "ㅗㅏ")
-            .replace("ㅝ", "ㅜㅓ")
-            .replace("ㅟ", "ㅜㅣ")
-            .replace("ㅢ", "ㅡㅣ")
-            .replace("ㅚ", "ㅗㅣ")
-            .replace("ㅙ", "ㅗㅐ")
-            .replace("ㅞ", "ㅜㅔ");
-    }
 }
