@@ -26,8 +26,11 @@ import android.widget.Space;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -233,7 +236,9 @@ public class NouleKeyboardView extends ConstraintLayout {
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(manager);
 
-        suggestionAdapter = new SuggestionAdapter();
+        suggestionAdapter = new SuggestionAdapter(
+            ResourcesCompat.getFont(getContext(), R.font.manchu)
+        );
         suggestionAdapter.setOnTouchListener((v, event, entry) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 v.setPressed(true);
@@ -379,7 +384,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     ));
                 }
                 else {
-                    Button button = (Button) curRow.getChildAt(index);
+                    MaterialButton button = (MaterialButton) curRow.getChildAt(index);
                     button.setText(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);

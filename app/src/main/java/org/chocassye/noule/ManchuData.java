@@ -37,4 +37,11 @@ public class ManchuData {
                 .replace("z", "ᡯ")
                 .replace("Z", "ᡷ");
     }
+
+    public static boolean isManchu(String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        return s.matches("[\u1800-\u18af]+");
+    }
 }

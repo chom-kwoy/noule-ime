@@ -1,12 +1,16 @@
 package org.chocassye.noule;
 
 import android.annotation.SuppressLint;
+import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
@@ -23,14 +27,14 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
         public ViewHolder(@NonNull View itemView, SuggestionAdapter parent) {
             super(itemView);
             view = itemView;
-            Chip chip = view.findViewById(R.id.chip);
-            chip.setOnTouchListener(
+            TextView textView = view.findViewById(R.id.textView);
+            textView.setOnTouchListener(
                 (v, event) -> parent.onTouchEvent(v, event, position)
             );
         }
 
-        public Chip getChip() {
-            return view.findViewById(R.id.chip);
+        public TextView getTextView() {
+            return view.findViewById(R.id.textView);
         }
 
         public void setPosition(int position) {
@@ -50,8 +54,11 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
     }
     private OnTouchListener onTouchListener = null;
 
-    public SuggestionAdapter() {
+    private Typeface manchuType;
+
+    public SuggestionAdapter(Typeface manchuType) {
         super();
+        this.manchuType = manchuType;
     }
 
     public void setData(Vector<SuggestionEntry> entries) {
@@ -70,12 +77,19 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        Chip chip = holder.getChip();
+        TextView textView = holder.getTextView();
         if (entries != null) {
             SuggestionEntry entry = entries.get(position);
-            chip.setText(entry.output);
+            textView.setText(entry.output);
+            if (!entry.output.isEmpty() && ManchuData.isManchu(entry.output)) {
+                textView.setTypeface(manchuType);
+                textView.setTextSize(23);
+            }
+            else {
+                textView.setTypeface(Typeface.DEFAULT);
+                textView.setTextSize(18);
+            }
         }
-        chip.setTextSize(18);
         holder.setPosition(position);
     }
 
