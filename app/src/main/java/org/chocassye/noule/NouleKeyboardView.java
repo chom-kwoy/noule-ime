@@ -308,8 +308,8 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
             else if (curComposingText.equals(".")) {
                 String[] punctuations = {
-                    "?", "!", ":", "~", "-", "@", "%", "^", "&", "*",
-                    "(", ")", "'", "\"", "/", "<", ">", "_", "+", "=",
+                    "?", ",", "!", ":", "~", "-", "@", "%", "^", "&", "*",
+                    "(", ")", "'", "/", "<", ">", "_", "+", "=",
                 };
                 entries = new Vector<>();
                 for (String punct : punctuations) {
