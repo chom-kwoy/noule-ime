@@ -405,6 +405,8 @@ public class NouleKeyboardView extends ConstraintLayout {
                         return true;
                     });
 
+                    button.setTextSize(15);
+
                     float weight = 1.0f;
                     if (key.equals("Space")) {
                         weight = 5.0f;
