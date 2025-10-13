@@ -9,6 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="keyboardBackground">#DDEEEEEE</color>
     <color name="popupBackground">#EEEEEE</color>
-    <color name="chipBackground">#A2A2A2</color>
+    <color name="chipBackground">#EEEEEE</color>
     <color name="slightTextColor">#FF333333</color>
 </resources>
