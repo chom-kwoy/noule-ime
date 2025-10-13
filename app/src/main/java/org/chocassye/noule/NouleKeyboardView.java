@@ -50,20 +50,21 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     private static final LayoutSet EN_LAYOUT = new LayoutSet();
     private static final LayoutSet KO_LAYOUT = new LayoutSet();
+    private static final LayoutSet SPECIAL_LAYOUT = new LayoutSet();
     static {
         EN_LAYOUT.lowerLayout = new String[][]{
             {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
             {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
             {"space-.5", "a", "s", "d", "f", "g", "h", "j", "k", "l", "space-.5"},
             {"Shift", "z", "x", "c", "v", "b", "n", "m", "Back"},
-            {",", "KO", "Space", ".", "Enter"},
+            {"!#?", "KO", "Space", ".", "Enter"},
         };
         EN_LAYOUT.upperLayout = new String[][]{
             {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
             {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
             {"space-.5", "A", "S", "D", "F", "G", "H", "J", "K", "L", "space-.5"},
             {"Shift", "Z", "X", "C", "V", "B", "N", "M", "Back"},
-            {",", "KO", "Space", ".", "Enter"},
+            {"!#?", "KO", "Space", ".", "Enter"},
         };
 
         KO_LAYOUT.lowerLayout = new String[][]{
@@ -71,19 +72,29 @@ public class NouleKeyboardView extends ConstraintLayout {
             {"ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ"},
             {"space-.5", "ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ", "space-.5"},
             {"Shift", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "Back"},
-            {",", "EN", "Space", ".", "Enter"},
+            {"!#?", "EN", "Space", ".", "Enter"},
         };
         KO_LAYOUT.upperLayout = new String[][]{
             {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
             {"ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅛ", "〮", "〯", "ㅒ", "ㅖ"},
             {"space-.5", "ㅿ", "ㄴ", "ㆁ", "ㄹ", "ㆆ", "ㅗ", "ㅓ", "ㆍ", "ㅣ", "space-.5"},
             {"Shift", "ᄼ", "ᄾ", "ᅎ", "ᅐ", "ᅔ", "ᅕ", "ㅸ", "Back"},
-            {",", "EN", "Space", ".", "Enter"},
+            {"!#?", "EN", "Space", ".", "Enter"},
+        };
+
+        SPECIAL_LAYOUT.lowerLayout = new String[][]{
+            {"?", "!", ":", "~", "-", "@", "#", "$", "%", "^"},
+            {"&", "*", "(", ")", "'", "\"", "/", "\\", "|", "`"},
+            {"{", "}", "[", "]", "<", ">", "_", "+", "=", ";"},
+            {"∅", "→", "「", "」", "『", "』", "·", "᠈", "᠉", "Back"},
+            {"Prev", ",", "Space", ".", "Enter"},
         };
     }
 
     private LayoutSet curLayoutSet;
     private String[][] curLayout;
+    private LayoutSet prevLayoutSet;
+    private String[][] prevLayout;
 
     private static class HanjaDictEntry {
         String hangul;
@@ -297,9 +308,8 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
             else if (curComposingText.equals(".")) {
                 String[] punctuations = {
-                    "?", "!", ":", "~", "-", "@", "#", "$", "%", "^", "&", "*",
-                    "(", ")", "'", "\"", "/", "\\", "|", "`", "{", "}", "[", "]",
-                    "<", ">", "_", "+", "=",
+                    "?", "!", ":", "~", "-", "@", "%", "^", "&", "*",
+                    "(", ")", "'", "\"", "/", "<", ">", "_", "+", "=",
                 };
                 entries = new Vector<>();
                 for (String punct : punctuations) {
@@ -398,7 +408,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     float weight = 1.0f;
                     if (key.equals("Space")) {
                         weight = 5.0f;
-                    } else if (key.equals("Shift") || key.equals("Back") || key.equals("Enter")) {
+                    } else if (key.length() > 3) {
                         weight = 1.3f;
                     } else {
                         button.setTextSize(20);
@@ -503,6 +513,15 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
             else if (key.equals("EN")) {
                 switchLayoutSet(EN_LAYOUT);
+            }
+            else if (key.equals("!#?")) {
+                prevLayoutSet = curLayoutSet;
+                prevLayout = curLayout;
+                switchLayoutSet(SPECIAL_LAYOUT);
+            }
+            else if (key.equals("Prev")) {
+                switchLayoutSet(prevLayoutSet);
+                setCurKeyLayout(prevLayout);
             }
             else if (key.equals("Enter")) {
                 finishComposing(ic);
