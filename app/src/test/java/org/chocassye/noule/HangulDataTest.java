@@ -1,5 +1,6 @@
 package org.chocassye.noule;
 
+import org.chocassye.noule.lang.HangulData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

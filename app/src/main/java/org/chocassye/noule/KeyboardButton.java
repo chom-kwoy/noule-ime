@@ -2,7 +2,12 @@ package org.chocassye.noule;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RectShape;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -33,6 +38,7 @@ public class KeyboardButton extends MaterialButton {
 
     private PopupWindow popupWindow;
     private TextView textView;
+    private GradientDrawable popupBackground;
 
     void initialize() {
         LayoutInflater layoutInflater = LayoutInflater.from(getContext());
@@ -49,12 +55,44 @@ public class KeyboardButton extends MaterialButton {
         super.setPressed(pressed);
     }
 
+    public void setPopupBackgroundColor(Integer color) {
+        if (color != null) {
+            GradientDrawable drawable = new GradientDrawable();
+            drawable.setShape(GradientDrawable.RECTANGLE);
+
+            // Corner radius
+            float radiusInDp = 10f;
+            float radiusInPx = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    radiusInDp,
+                    getContext().getResources().getDisplayMetrics()
+            );
+            drawable.setCornerRadius(radiusInPx);
+
+            // Set background
+            drawable.setColor(color);
+
+            popupBackground = drawable;
+        }
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             popupWindow.setWidth(getWidth());
             popupWindow.setHeight(getHeight());
             textView.setText(getText());
+            textView.setTextColor(getCurrentTextColor());
+            if (popupBackground != null) {
+                // Stroke
+                int strokeWidthInPx = (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        2,
+                        getContext().getResources().getDisplayMetrics()
+                );
+                popupBackground.setStroke(strokeWidthInPx, getCurrentTextColor());
+                textView.setBackground(popupBackground);
+            }
             int[] location = new int[2];
             this.getLocationInWindow(location);
             int popupX = location[0] - (popupWindow.getWidth() - getWidth()) / 2;

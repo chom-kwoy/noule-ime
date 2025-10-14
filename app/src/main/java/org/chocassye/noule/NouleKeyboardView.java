@@ -1,11 +1,13 @@
 package org.chocassye.noule;
 
-import static org.chocassye.noule.HangulData.getDisplayComposingText;
-import static org.chocassye.noule.HangulData.isHangulString;
+import static org.chocassye.noule.lang.HangulData.getDisplayComposingText;
+import static org.chocassye.noule.lang.HangulData.isHangulString;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,11 +17,10 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Space;
 
@@ -27,10 +28,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
+import org.chocassye.noule.lang.HangulData;
+import org.chocassye.noule.lang.ManchuData;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -115,6 +118,8 @@ public class NouleKeyboardView extends ConstraintLayout {
     private SuggestionAdapter suggestionAdapter;
     private boolean ignoreOnce = false;
 
+    private Integer themeColor, backgroundColor;
+
     private void readFreqFile(String filename) throws IOException {
         AssetManager assetManager = getContext().getAssets();
         InputStream freqHanjaFile = assetManager.open(filename);
@@ -137,6 +142,16 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     public void initialize() {
         keyRepeatHandler = new Handler(Looper.getMainLooper());
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String themeColorStr = preferences.getString("theme_color_pref", null);
+        if (themeColorStr != null) {
+            themeColor = Color.parseColor(String.format("#%s", themeColorStr));
+        }
+        String backgroundColorStr = preferences.getString("background_color_pref", null);
+        if (backgroundColorStr != null) {
+            backgroundColor = Color.parseColor(String.format("#%s", backgroundColorStr));
+        }
 
         Thread thread = new Thread(() -> {
             try {
@@ -182,22 +197,25 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     public NouleKeyboardView(@NonNull Context context) {
-        super(context, null, R.style.Theme_Noule);
+        super(context);
         initialize();
     }
 
     public NouleKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, R.style.Theme_Noule);
+        super(context, attrs);
         initialize();
     }
 
     public NouleKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, R.style.Theme_Noule);
+        super(context, attrs, defStyleAttr);
         initialize();
     }
 
     public void setParentService(NouleIME ime) {
         this.imeService = ime;
+        if (backgroundColor != null) {
+            this.setBackgroundColor(backgroundColor);
+        }
 
         switchLayoutSet(EN_LAYOUT);
 
@@ -340,6 +358,8 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     @SuppressLint("ClickableViewAccessibility")
     private void setCurKeyLayout(String[][] keys) {
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
         curLayout = keys;
 
         LinearLayout[] rows = {
@@ -363,7 +383,13 @@ public class NouleKeyboardView extends ConstraintLayout {
                         ));
                     }
                     else {
-                        Button button = new KeyboardButton(getContext());
+                        KeyboardButton button = (KeyboardButton) inflater.inflate(R.layout.keyboard_key, null, false);
+                        if (themeColor != null) {
+                            button.setTextColor(themeColor);
+                        }
+                        if (backgroundColor != null) {
+                            button.setPopupBackgroundColor(backgroundColor);
+                        }
                         curRow.addView(button, new LinearLayout.LayoutParams(
                             0,
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -384,7 +410,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     ));
                 }
                 else {
-                    MaterialButton button = (MaterialButton) curRow.getChildAt(index);
+                    KeyboardButton button = (KeyboardButton) curRow.getChildAt(index);
                     button.setText(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);

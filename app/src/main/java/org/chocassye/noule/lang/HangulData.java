@@ -1,4 +1,4 @@
-package org.chocassye.noule;
+package org.chocassye.noule.lang;
 
 import java.text.Normalizer;
 import java.util.HashMap;

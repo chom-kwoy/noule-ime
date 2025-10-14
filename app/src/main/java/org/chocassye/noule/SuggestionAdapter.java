@@ -2,7 +2,6 @@ package org.chocassye.noule;
 
 import android.annotation.SuppressLint;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -10,10 +9,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.chip.Chip;
+import org.chocassye.noule.lang.ManchuData;
 
 import java.util.Vector;
 

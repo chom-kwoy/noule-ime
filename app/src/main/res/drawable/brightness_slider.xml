@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Transparent fill color -->
+    <solid android:color="#00000000" />
+
+    <!-- Thick white border (adjust the width as needed) -->
+    <stroke
+        android:width="4dp"
+        android:color="@color/white" />
+
+    <!-- Fixed size for the circle -->
+    <size
+        android:width="20dp"
+        android:height="20dp" />
+</shape>

@@ -1,7 +1,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory android:title="설정에서 Noule 키보드를 활성해주세요.">
+    <PreferenceCategory android:title="@string/setting_directions">
 
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/theme">
+
+        <org.chocassye.noule.preference.ColorPickerPreference
+            android:key="theme_color_pref"
+            android:title="@string/setting_theme_color" />
+
+        <org.chocassye.noule.preference.ColorPickerPreference
+            android:key="background_color_pref"
+            android:title="@string/setting_background_color" />
     </PreferenceCategory>
 </PreferenceScreen>

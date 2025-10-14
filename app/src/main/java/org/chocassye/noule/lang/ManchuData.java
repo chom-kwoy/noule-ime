@@ -1,4 +1,4 @@
-package org.chocassye.noule;
+package org.chocassye.noule.lang;
 
 public class ManchuData {
     public static String convertToManchu(String text) {
