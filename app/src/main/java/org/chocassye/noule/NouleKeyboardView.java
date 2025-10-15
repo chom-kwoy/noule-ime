@@ -20,6 +20,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
 import android.widget.Space;
@@ -219,35 +220,6 @@ public class NouleKeyboardView extends ConstraintLayout {
 
         switchLayoutSet(EN_LAYOUT);
 
-        this.imeService.setOnUpdateSelectionListener((oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd) -> {
-
-            // If the current selection in the text view changes, we should
-            // clear whatever candidate text we have.
-            if (!curComposingText.isEmpty() &&
-                    (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
-                if (ignoreOnce) {
-                    ignoreOnce = false;
-                }
-                else {
-                    Log.i("MYLOG", "current selection in the text view changed, clear whatever candidate text we have");
-                    InputConnection ic = imeService.getCurrentInputConnection();
-                    finishComposing(ic);
-                }
-            }
-
-            // If the content of the edittext is changed (e.g. flushed),
-            // clear the composing buffer.
-            if (this.expectedSelEndPos != oldSelEnd) {
-                Log.i("MYLOG", "content of the edittext is changed, clear the composing buffer");
-                InputConnection ic = imeService.getCurrentInputConnection();
-                if (ic != null && !curComposingText.isEmpty()) {
-                    updateComposingText(ic, curComposingText.substring(curComposingText.length() - 1));
-                }
-            }
-
-            this.expectedSelEndPos = newSelEnd;
-        });
-
         RecyclerView recyclerView = findViewById(R.id.suggestionRecycler);
 
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
@@ -282,6 +254,54 @@ public class NouleKeyboardView extends ConstraintLayout {
         recyclerView.setAdapter(suggestionAdapter);
     }
 
+    public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd) {
+        // If the current selection in the text view changes, we should
+        // clear whatever candidate text we have.
+        if (!curComposingText.isEmpty() &&
+                (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
+            if (ignoreOnce) {
+                ignoreOnce = false;
+            }
+            else {
+                Log.i("MYLOG", "current selection in the text view changed, clear whatever candidate text we have");
+                InputConnection ic = imeService.getCurrentInputConnection();
+                finishComposing(ic);
+            }
+        }
+
+        // If the content of the edittext is changed (e.g. flushed),
+        // clear the composing buffer.
+        if (this.expectedSelEndPos != oldSelEnd) {
+            Log.i("MYLOG", "content of the edittext is changed, clear the composing buffer");
+            InputConnection ic = imeService.getCurrentInputConnection();
+            if (ic != null && !curComposingText.isEmpty()) {
+                updateComposingText(ic, curComposingText.substring(curComposingText.length() - 1));
+            }
+        }
+
+        this.expectedSelEndPos = newSelEnd;
+    }
+
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        InputConnection ic = imeService.getCurrentInputConnection();
+        finishComposing(ic);
+    }
+
+    public void onStartInputView(EditorInfo editorInfo, boolean restarting) {
+        InputConnection ic = imeService.getCurrentInputConnection();
+        finishComposing(ic);
+    }
+
+    public void onFinishInput() {
+        InputConnection ic = imeService.getCurrentInputConnection();
+        finishComposing(ic);
+    }
+
+    public void onFinishInputView(boolean finishingInput) {
+        InputConnection ic = imeService.getCurrentInputConnection();
+        finishComposing(ic);
+    }
+
     public void switchLayoutSet(LayoutSet newLayoutSet) {
         this.curLayoutSet = newLayoutSet;
         setCurKeyLayout(newLayoutSet.lowerLayout);
@@ -294,12 +314,14 @@ public class NouleKeyboardView extends ConstraintLayout {
     private void finishComposing(InputConnection ic, String newComposingText) {
         if (ic != null) {
             ic.finishComposingText();
-            this.curComposingText = newComposingText;
+        }
+        this.curComposingText = newComposingText;
+        if (ic != null) {
             if (!newComposingText.isEmpty()) {
                 ic.setComposingText(newComposingText, 1);
             }
-            updateSuggestionBar();
         }
+        updateSuggestionBar();
     }
 
     private void updateComposingText(InputConnection ic, String newComposingText) {
