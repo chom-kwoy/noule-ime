@@ -120,6 +120,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private boolean ignoreOnce = false;
 
     private Integer themeColor, backgroundColor;
+    private String buttonStyle;
 
     private void readFreqFile(String filename) throws IOException {
         AssetManager assetManager = getContext().getAssets();
@@ -153,6 +154,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         if (backgroundColorStr != null) {
             backgroundColor = Color.parseColor(String.format("#%s", backgroundColorStr));
         }
+        buttonStyle = preferences.getString("button_style_pref", "outlined");
 
         Thread thread = new Thread(() -> {
             try {
@@ -405,7 +407,17 @@ public class NouleKeyboardView extends ConstraintLayout {
                         ));
                     }
                     else {
-                        KeyboardButton button = (KeyboardButton) inflater.inflate(R.layout.keyboard_key, null, false);
+                        int layout = R.layout.keyboard_key_outlined;
+                        switch (buttonStyle) {
+                            case "flat":
+                                layout = R.layout.keyboard_key_flat;
+                                break;
+                            case "filled":
+                                layout = R.layout.keyboard_key_filled;
+                                break;
+                        }
+                        KeyboardButton button = (KeyboardButton) inflater.inflate(
+                                layout, null, false);
                         if (themeColor != null) {
                             button.setTextColor(themeColor);
                         }

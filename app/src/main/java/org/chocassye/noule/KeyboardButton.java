@@ -1,11 +1,7 @@
 package org.chocassye.noule;
 
 import android.content.Context;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
