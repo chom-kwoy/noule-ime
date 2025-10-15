@@ -38,7 +38,6 @@ public class NouleIMESettings extends AppCompatActivity {
 
         @Override
         public void onDisplayPreferenceDialog(@NonNull Preference preference) {
-            Log.i("MYLOG", String.format("onDisplayPreferenceDialog %s %s", preference.getClass().toString(), preference.toString()));
             if (preference instanceof ColorPickerPreference) {
                 ColorPickerPreferenceDialogFragment dialogFragment =
                         ColorPickerPreferenceDialogFragment.newInstance(preference.getKey());

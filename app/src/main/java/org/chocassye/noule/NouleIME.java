@@ -7,16 +7,16 @@ import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
-public class NouleIME extends InputMethodService {
+public class NouleIME extends InputMethodService implements SharedPreferences.OnSharedPreferenceChangeListener  {
     public NouleIME() {
     }
 
     private NouleKeyboardView inputView;
 
-    @Override
-    public View onCreateInputView() {
+    private View createInputView() {
         inputView = (NouleKeyboardView) getLayoutInflater()
                 .cloneInContext(new ContextThemeWrapper(this, R.style.Theme_Noule))
                 .inflate(R.layout.keyboard, null);
@@ -24,6 +24,21 @@ public class NouleIME extends InputMethodService {
         inputView.setParentService(this);
 
         return inputView;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        // Detect preference updates
+        SharedPreferences preferences =
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public View onCreateInputView() {
+        return createInputView();
     }
 
     @Override
@@ -64,5 +79,11 @@ public class NouleIME extends InputMethodService {
         if (inputView != null) {
             inputView.onFinishInputView(finishingInput);
         }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
+        // Recreate input view
+        setInputView(createInputView());
     }
 }
