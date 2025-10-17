@@ -10,10 +10,9 @@ import android.view.inputmethod.EditorInfo;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
-public class NouleIME extends InputMethodService implements SharedPreferences.OnSharedPreferenceChangeListener  {
-    public NouleIME() {
-    }
+import org.chocassye.noule.lang.HanjaDict;
 
+public class NouleIME extends InputMethodService implements SharedPreferences.OnSharedPreferenceChangeListener  {
     private NouleKeyboardView inputView;
 
     private View createInputView() {
@@ -34,6 +33,8 @@ public class NouleIME extends InputMethodService implements SharedPreferences.On
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.registerOnSharedPreferenceChangeListener(this);
+
+        HanjaDict.initializeAsync(getAssets());
     }
 
     @Override
