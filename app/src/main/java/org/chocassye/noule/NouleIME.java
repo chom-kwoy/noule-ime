@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
 import org.chocassye.noule.lang.HanjaDict;
+import org.chocassye.noule.lang.SymbolData;
 
 public class NouleIME extends InputMethodService implements SharedPreferences.OnSharedPreferenceChangeListener  {
     private NouleKeyboardView inputView;
@@ -34,7 +35,9 @@ public class NouleIME extends InputMethodService implements SharedPreferences.On
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.registerOnSharedPreferenceChangeListener(this);
 
+        // Load data from assets
         HanjaDict.initializeAsync(getAssets());
+        SymbolData.initialize(getAssets());
     }
 
     @Override

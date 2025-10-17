@@ -6,7 +6,6 @@ import static org.chocassye.noule.lang.HangulData.isHangulString;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -34,17 +33,11 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.apache.commons.collections4.Trie;
-import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.chocassye.noule.lang.HangulData;
 import org.chocassye.noule.lang.HanjaDict;
 import org.chocassye.noule.lang.ManchuData;
+import org.chocassye.noule.lang.SymbolData;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.Vector;
@@ -276,8 +269,20 @@ public class NouleKeyboardView extends ConstraintLayout {
 
         if (!curComposingText.isEmpty()) {
 
+            if (SymbolData.symbolMap.containsKey(curComposingText)) {
+                entries = new Vector<>();
+
+                for (String symbol : SymbolData.symbolMap.get(curComposingText)) {
+                    SuggestionAdapter.SuggestionEntry suggestionEntry =
+                            new SuggestionAdapter.SuggestionEntry();
+                    suggestionEntry.input = curComposingText;
+                    suggestionEntry.output = symbol;
+                    entries.add(suggestionEntry);
+                }
+            }
+
             // Hangul -> Hanja conversion
-            if (isHangulString(curComposingText) && HanjaDict.isHanjaDictInitialized()) {
+            else if (isHangulString(curComposingText) && HanjaDict.isHanjaDictInitialized()) {
                 String decomposedText = HangulData.decomposeHangul(curComposingText);
                 if (decomposedText.length() >= 2) {  // No point when its just one letter
                     SortedMap<String, Vector<HanjaDict.HanjaDictEntry>> prefixMap =
