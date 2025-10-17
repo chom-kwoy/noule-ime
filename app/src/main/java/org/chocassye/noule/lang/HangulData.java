@@ -827,6 +827,11 @@ public class HangulData {
                 .replace("ㅢ", "ㅡㅣ")
                 .replace("ㅚ", "ㅗㅣ")
                 .replace("ㅙ", "ㅗㅐ")
-                .replace("ㅞ", "ㅜㅔ");
+                .replace("ㅞ", "ㅜㅔ")
+                .replace("ㄲ", "ㄱㄱ")
+                .replace("ㄸ", "ㄷㄷ")
+                .replace("ㅃ", "ㅂㅂ")
+                .replace("ㅆ", "ㅅㅅ")
+                .replace("ㅉ", "ㅈㅈ");
     }
 }

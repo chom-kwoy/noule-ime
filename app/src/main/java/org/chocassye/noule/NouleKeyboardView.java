@@ -355,7 +355,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         if (!curComposingText.isEmpty()) {
             if (isHangulString(curComposingText)) {
                 if (isHanjaDictInitialized) {
-                    String decomposedText = curComposingText;
+                    String decomposedText = HangulData.decomposeHangul(curComposingText);
                     SortedMap<String, Vector<HanjaDictEntry>> prefixMap =
                             hanjaDict.prefixMap(decomposedText);
                     Log.i("MYLOG", String.format("prefixMap size = %d", prefixMap.size()));
