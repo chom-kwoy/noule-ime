@@ -50,7 +50,7 @@ public class ColorPickerPreference extends DialogPreference {
             SharedPreferences sharedPreferences = getSharedPreferences();
             if (sharedPreferences != null) {
                 SharedPreferences.Editor editor = getSharedPreferences().edit();
-                editor.putInt("brightnessPos", brightnessPos);
+                editor.putInt(String.format("%s-brightnessPos", getKey()), brightnessPos);
                 editor.apply();
             }
 
@@ -63,7 +63,8 @@ public class ColorPickerPreference extends DialogPreference {
         this.colorValue = getPersistedString(null);
         SharedPreferences sharedPreferences = getSharedPreferences();
         if (sharedPreferences != null) {
-            this.brightnessPos = sharedPreferences.getInt("brightnessPos", -1);
+            this.brightnessPos = sharedPreferences.getInt(
+                    String.format("%s-brightnessPos", getKey()), -1);
         }
     }
 }

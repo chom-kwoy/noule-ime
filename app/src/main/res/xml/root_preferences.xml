@@ -14,6 +14,10 @@
             android:key="background_color_pref"
             android:title="@string/setting_background_color" />
 
+        <org.chocassye.noule.preference.ColorPickerPreference
+            android:key="button_color_pref"
+            android:title="@string/setting_button_color" />
+
         <ListPreference
             android:defaultValue="outlined"
             android:entries="@array/button_style_entries"
