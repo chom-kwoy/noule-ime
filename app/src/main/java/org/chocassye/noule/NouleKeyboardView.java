@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -119,7 +120,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private SuggestionAdapter suggestionAdapter;
     private boolean ignoreOnce = false;
 
-    private Integer themeColor, backgroundColor;
+    private Integer themeColor, backgroundColor, buttonColor;
     private String buttonStyle;
 
     private void readFreqFile(String filename) throws IOException {
@@ -153,6 +154,10 @@ public class NouleKeyboardView extends ConstraintLayout {
         String backgroundColorStr = preferences.getString("background_color_pref", null);
         if (backgroundColorStr != null) {
             backgroundColor = Color.parseColor(String.format("#%s", backgroundColorStr));
+        }
+        String buttonColorStr = preferences.getString("button_color_pref", null);
+        if (buttonColorStr != null) {
+            buttonColor = Color.parseColor(String.format("#%s", buttonColorStr));
         }
         buttonStyle = preferences.getString("button_style_pref", "outlined");
 
@@ -423,6 +428,19 @@ public class NouleKeyboardView extends ConstraintLayout {
                         }
                         if (backgroundColor != null) {
                             button.setPopupBackgroundColor(backgroundColor);
+                        }
+                        if (buttonColor != null) {
+                            switch (buttonStyle) {
+                                case "flat":
+                                case "outlined":
+                                    button.setRippleColor(ColorStateList.valueOf(
+                                        0x1f000000 | (buttonColor & 0xffffff)
+                                    ));
+                                    break;
+                                case "filled":
+                                    button.setBackgroundTintList(ColorStateList.valueOf(buttonColor));
+                                    break;
+                            }
                         }
                         curRow.addView(button, new LinearLayout.LayoutParams(
                             0,
