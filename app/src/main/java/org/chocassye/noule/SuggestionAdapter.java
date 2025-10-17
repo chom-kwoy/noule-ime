@@ -43,6 +43,7 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
     public static class SuggestionEntry {
         String input;
         String output;
+        int freq;
     }
 
     private Vector<SuggestionEntry> entries = null;

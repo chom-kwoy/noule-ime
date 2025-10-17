@@ -34,6 +34,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.apache.commons.collections4.Trie;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.chocassye.noule.lang.HangulData;
 import org.chocassye.noule.lang.ManchuData;
 
@@ -43,6 +45,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.Vector;
 
 public class NouleKeyboardView extends ConstraintLayout {
@@ -110,8 +113,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         String[] meanings;
         int freq;
     }
-    private HashMap<String, Vector<HanjaDictEntry>> hanjaDict = new HashMap<>();
-    private HashMap<String, Integer> frequencyMap = new HashMap<>();
+    private final Trie<String, Vector<HanjaDictEntry>> hanjaDict = new PatriciaTrie<>();
     boolean isHanjaDictInitialized = false;
 
     private Handler keyRepeatHandler;
@@ -123,7 +125,10 @@ public class NouleKeyboardView extends ConstraintLayout {
     private Integer themeColor, backgroundColor, buttonColor;
     private String buttonStyle;
 
-    private void readFreqFile(String filename) throws IOException {
+    private void readFreqFile(
+            String filename,
+            HashMap<String, Integer> frequencyMap
+    ) throws IOException {
         AssetManager assetManager = getContext().getAssets();
         InputStream freqHanjaFile = assetManager.open(filename);
         BufferedReader reader = new BufferedReader(new InputStreamReader(freqHanjaFile));
@@ -163,8 +168,11 @@ public class NouleKeyboardView extends ConstraintLayout {
 
         Thread thread = new Thread(() -> {
             try {
-                readFreqFile("freq-hanja.txt");
-                readFreqFile("freq-hanjaeo.txt");
+                Log.i("MYLOG", "Loading Hanja dict...");
+
+                HashMap<String, Integer> frequencyMap = new HashMap<>();
+                readFreqFile("freq-hanja.txt", frequencyMap);
+                readFreqFile("freq-hanjaeo.txt", frequencyMap);
 
                 AssetManager assetManager = getContext().getAssets();
                 InputStream hanjaTxtFile = assetManager.open("hanja.txt");
@@ -178,6 +186,7 @@ public class NouleKeyboardView extends ConstraintLayout {
 
                     String[] words = line.split(":");
                     String hangul = words[0];
+                    String hangulDecomposed = HangulData.decomposeHangul(hangul);
 
                     HanjaDictEntry entry = new HanjaDictEntry();
                     entry.hangul = hangul;
@@ -185,10 +194,10 @@ public class NouleKeyboardView extends ConstraintLayout {
                     entry.meanings = words.length >= 3? words[2].split(", ") : null;
                     entry.freq = frequencyMap.getOrDefault(entry.hanja, 0);
 
-                    if (!hanjaDict.containsKey(hangul)) {
-                        hanjaDict.put(hangul, new Vector<>());
-                    }
-                    hanjaDict.get(hangul).add(entry);
+                    hanjaDict.computeIfAbsent(
+                        hangulDecomposed,
+                        k -> new Vector<>()
+                    ).add(entry);
                 }
                 hanjaTxtFile.close();
 
@@ -197,6 +206,8 @@ public class NouleKeyboardView extends ConstraintLayout {
                 }
 
                 isHanjaDictInitialized = true;
+                Log.i("MYLOG", "Hanja dict Loaded.");
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -344,17 +355,45 @@ public class NouleKeyboardView extends ConstraintLayout {
         if (!curComposingText.isEmpty()) {
             if (isHangulString(curComposingText)) {
                 if (isHanjaDictInitialized) {
-                    String text = getDisplayComposingText(curComposingText);
-                    Vector<HanjaDictEntry> lookUp = hanjaDict.get(text);
-                    if (lookUp != null) {
-                        entries = new Vector<>();
-                        for (HanjaDictEntry entry : lookUp) {
-                            SuggestionAdapter.SuggestionEntry suggestionEntry =
-                                    new SuggestionAdapter.SuggestionEntry();
-                            suggestionEntry.input = curComposingText;
-                            suggestionEntry.output = entry.hanja;
-                            entries.add(suggestionEntry);
+                    String decomposedText = curComposingText;
+                    SortedMap<String, Vector<HanjaDictEntry>> prefixMap =
+                            hanjaDict.prefixMap(decomposedText);
+                    Log.i("MYLOG", String.format("prefixMap size = %d", prefixMap.size()));
+                    if (!prefixMap.isEmpty()) {
+                        // Collect exact entries if present
+                        Vector<SuggestionAdapter.SuggestionEntry> exactEntries = new Vector<>();
+                        Vector<HanjaDictEntry> lookUp = hanjaDict.get(decomposedText);
+                        if (lookUp != null) {
+                            for (HanjaDictEntry entry : lookUp) {
+                                SuggestionAdapter.SuggestionEntry suggestionEntry =
+                                        new SuggestionAdapter.SuggestionEntry();
+                                suggestionEntry.input = curComposingText;
+                                suggestionEntry.output = entry.hanja;
+                                suggestionEntry.freq = entry.freq;
+                                exactEntries.add(suggestionEntry);
+                            }
                         }
+
+                        // Collect prefix matches and sort by frequency
+                        Vector<SuggestionAdapter.SuggestionEntry> approxEntries = new Vector<>();
+                        for (Map.Entry<String, Vector<HanjaDictEntry>> prefixEntries : prefixMap.entrySet()) {
+                            if (prefixEntries.getKey().equals(decomposedText)) {
+                                continue;
+                            }
+                            for (HanjaDictEntry entry : prefixEntries.getValue()) {
+                                SuggestionAdapter.SuggestionEntry suggestionEntry =
+                                        new SuggestionAdapter.SuggestionEntry();
+                                suggestionEntry.input = curComposingText;
+                                suggestionEntry.output = entry.hanja;
+                                suggestionEntry.freq = entry.freq;
+                                approxEntries.add(suggestionEntry);
+                            }
+                        }
+                        approxEntries.sort((a, b) -> b.freq - a.freq);
+
+                        entries = new Vector<>();
+                        entries.addAll(exactEntries);
+                        entries.addAll(approxEntries);
                     }
                 }
             }

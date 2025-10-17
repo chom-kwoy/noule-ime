@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.preference)
     implementation("com.github.skydoves:colorpickerview:2.3.0")
+    implementation("org.apache.commons:commons-collections4:4.4")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
