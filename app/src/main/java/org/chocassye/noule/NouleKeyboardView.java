@@ -279,44 +279,46 @@ public class NouleKeyboardView extends ConstraintLayout {
             // Hangul -> Hanja conversion
             if (isHangulString(curComposingText) && HanjaDict.isHanjaDictInitialized()) {
                 String decomposedText = HangulData.decomposeHangul(curComposingText);
-                SortedMap<String, Vector<HanjaDict.HanjaDictEntry>> prefixMap =
-                        HanjaDict.hanjaDict.prefixMap(decomposedText);
+                if (decomposedText.length() >= 2) {  // No point when its just one letter
+                    SortedMap<String, Vector<HanjaDict.HanjaDictEntry>> prefixMap =
+                            HanjaDict.hanjaDict.prefixMap(decomposedText);
 
-                if (!prefixMap.isEmpty()) {
-                    // Collect exact entries if present
-                    Vector<SuggestionAdapter.SuggestionEntry> exactEntries = new Vector<>();
-                    Vector<HanjaDict.HanjaDictEntry> lookUp = HanjaDict.hanjaDict.get(decomposedText);
-                    if (lookUp != null) {
-                        for (HanjaDict.HanjaDictEntry entry : lookUp) {
-                            SuggestionAdapter.SuggestionEntry suggestionEntry =
-                                    new SuggestionAdapter.SuggestionEntry();
-                            suggestionEntry.input = curComposingText;
-                            suggestionEntry.output = entry.hanja;
-                            suggestionEntry.freq = entry.freq;
-                            exactEntries.add(suggestionEntry);
+                    if (!prefixMap.isEmpty()) {
+                        // Collect exact entries if present
+                        Vector<SuggestionAdapter.SuggestionEntry> exactEntries = new Vector<>();
+                        Vector<HanjaDict.HanjaDictEntry> lookUp = HanjaDict.hanjaDict.get(decomposedText);
+                        if (lookUp != null) {
+                            for (HanjaDict.HanjaDictEntry entry : lookUp) {
+                                SuggestionAdapter.SuggestionEntry suggestionEntry =
+                                        new SuggestionAdapter.SuggestionEntry();
+                                suggestionEntry.input = curComposingText;
+                                suggestionEntry.output = entry.hanja;
+                                suggestionEntry.freq = entry.freq;
+                                exactEntries.add(suggestionEntry);
+                            }
                         }
+
+                        // Collect prefix matches and sort by frequency
+                        Vector<SuggestionAdapter.SuggestionEntry> approxEntries = new Vector<>();
+                        for (Map.Entry<String, Vector<HanjaDict.HanjaDictEntry>> prefixEntries : prefixMap.entrySet()) {
+                            if (prefixEntries.getKey().equals(decomposedText)) {
+                                continue;
+                            }
+                            for (HanjaDict.HanjaDictEntry entry : prefixEntries.getValue()) {
+                                SuggestionAdapter.SuggestionEntry suggestionEntry =
+                                        new SuggestionAdapter.SuggestionEntry();
+                                suggestionEntry.input = curComposingText;
+                                suggestionEntry.output = entry.hanja;
+                                suggestionEntry.freq = entry.freq;
+                                approxEntries.add(suggestionEntry);
+                            }
+                        }
+                        approxEntries.sort((a, b) -> b.freq - a.freq);
+
+                        entries = new Vector<>();
+                        entries.addAll(exactEntries);
+                        entries.addAll(approxEntries);
                     }
-
-                    // Collect prefix matches and sort by frequency
-                    Vector<SuggestionAdapter.SuggestionEntry> approxEntries = new Vector<>();
-                    for (Map.Entry<String, Vector<HanjaDict.HanjaDictEntry>> prefixEntries : prefixMap.entrySet()) {
-                        if (prefixEntries.getKey().equals(decomposedText)) {
-                            continue;
-                        }
-                        for (HanjaDict.HanjaDictEntry entry : prefixEntries.getValue()) {
-                            SuggestionAdapter.SuggestionEntry suggestionEntry =
-                                    new SuggestionAdapter.SuggestionEntry();
-                            suggestionEntry.input = curComposingText;
-                            suggestionEntry.output = entry.hanja;
-                            suggestionEntry.freq = entry.freq;
-                            approxEntries.add(suggestionEntry);
-                        }
-                    }
-                    approxEntries.sort((a, b) -> b.freq - a.freq);
-
-                    entries = new Vector<>();
-                    entries.addAll(exactEntries);
-                    entries.addAll(approxEntries);
                 }
             }
 
