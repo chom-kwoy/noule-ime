@@ -2,6 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/setting_directions">
+        <Preference
+            android:key="open_settings_pref"
+            android:title="@string/open_settings"/>
 
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/theme">

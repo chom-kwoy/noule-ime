@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Noule IME - Old Hangul, Hanja, Manchu Alphabet</string>
+    <string name="setting_directions">Please activate Noule in the Phone\'s settings.</string>
+    <string name="theme">Theme</string>
+    <string name="setting_theme_color">Theme color</string>
+    <string name="setting_background_color">Background color</string>
+    <string name="setting_button_color">Button color</string>
+    <string name="setting_button_style">Button style</string>
+    <string name="flat">Flat</string>
+    <string name="outlined">Outlined</string>
+    <string name="filled">Filled</string>
+    <string name="open_settings">Open keyboard settings...</string>
+    <string name="settings">Noule IME Settings</string>
+</resources>

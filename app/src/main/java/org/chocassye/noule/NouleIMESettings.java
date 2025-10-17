@@ -1,6 +1,8 @@
 package org.chocassye.noule;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -28,12 +30,24 @@ public class NouleIMESettings extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        setTitle(R.string.settings);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+
+            Preference openSettings = findPreference("open_settings_pref");
+            openSettings.setOnPreferenceClickListener((preference) -> {
+                // Create an Intent with the action to open input method settings
+                Intent intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
+
+                // Start the activity
+                startActivity(intent);
+
+                return true;
+            });
         }
 
         @Override

@@ -1,9 +1,8 @@
 <resources>
-    <!-- Reply Preference -->
     <string-array name="button_style_entries">
-        <item>플랫</item>
-        <item>외곽선</item>
-        <item>채움</item>
+        <item>@string/flat</item>
+        <item>@string/outlined</item>
+        <item>@string/filled</item>
     </string-array>
 
     <string-array name="button_style_values">
