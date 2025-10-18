@@ -35,6 +35,10 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
             return view.findViewById(R.id.textView);
         }
 
+        public TextView getHintTextView() {
+            return view.findViewById(R.id.hintTextView);
+        }
+
         public void setPosition(int position) {
             this.position = position;
         }
@@ -43,6 +47,7 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
     public static class SuggestionEntry {
         String input;
         String output;
+        String annotation;
         int freq;
     }
 
@@ -77,6 +82,7 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         TextView textView = holder.getTextView();
+        TextView hintTextView = holder.getHintTextView();
         if (entries != null) {
             SuggestionEntry entry = entries.get(position);
             textView.setText(entry.output);
@@ -87,6 +93,14 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
             else {
                 textView.setTypeface(Typeface.DEFAULT);
                 textView.setTextSize(18);
+            }
+            if (entry.annotation != null) {
+                hintTextView.setText(entry.annotation);
+                if (entry.output.length() == 1 && entry.annotation.length() >= 4) {
+                    hintTextView.setScaleX(0.7f);
+                }
+            } else {
+                hintTextView.setText("");
             }
         }
         holder.setPosition(position);

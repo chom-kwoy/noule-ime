@@ -2,7 +2,6 @@ package org.chocassye.noule;
 
 import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;

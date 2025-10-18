@@ -14,16 +14,19 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
 import android.widget.Space;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -299,6 +302,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                                 suggestionEntry.input = curComposingText;
                                 suggestionEntry.output = entry.hanja;
                                 suggestionEntry.freq = entry.freq;
+                                suggestionEntry.annotation = entry.hangul;
                                 exactEntries.add(suggestionEntry);
                             }
                         }
@@ -315,6 +319,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                                 suggestionEntry.input = curComposingText;
                                 suggestionEntry.output = entry.hanja;
                                 suggestionEntry.freq = entry.freq;
+                                suggestionEntry.annotation = entry.hangul;
                                 approxEntries.add(suggestionEntry);
                             }
                         }
@@ -343,14 +348,56 @@ public class NouleKeyboardView extends ConstraintLayout {
                 }
             }
 
-            // Latin -> Manchu conversion
+            // Latin -> Manchu, Cangjie conversion
             else if (isAlphabetic(curComposingText)) {
                 entries = new Vector<>();
-                SuggestionAdapter.SuggestionEntry suggestionEntry =
+
+                // Manchu
+                SuggestionAdapter.SuggestionEntry manchuEntry =
                         new SuggestionAdapter.SuggestionEntry();
-                suggestionEntry.input = curComposingText;
-                suggestionEntry.output = ManchuData.convertToManchu(curComposingText);
-                entries.add(suggestionEntry);
+                manchuEntry.input = curComposingText;
+                manchuEntry.output = ManchuData.convertToManchu(curComposingText);
+                entries.add(manchuEntry);
+
+                // Cangjie
+                if (HanjaDict.isCangjieDictInitialized()) {
+                    String input = curComposingText.toUpperCase();
+
+                    Vector<SuggestionAdapter.SuggestionEntry> exactEntries = new Vector<>();
+                    Vector<String> exactMatch = HanjaDict.cangjieDict.get(input);
+                    if (exactMatch != null) {
+                        for (String match : exactMatch) {
+                            SuggestionAdapter.SuggestionEntry cangjieEntry =
+                                    new SuggestionAdapter.SuggestionEntry();
+                            cangjieEntry.input = curComposingText;
+                            cangjieEntry.output = match;
+                            cangjieEntry.annotation = HanjaDict.toCangjie(input);
+                            cangjieEntry.freq = HanjaDict.frequencyMap.getOrDefault(match, 0);
+                            exactEntries.add(cangjieEntry);
+                        }
+                    }
+                    exactEntries.sort((a, b) -> b.freq - a.freq);
+                    entries.addAll(exactEntries);
+
+                    Vector<SuggestionAdapter.SuggestionEntry> approxEntries = new Vector<>();
+                    SortedMap<String, Vector<String>> prefixMap =
+                            HanjaDict.cangjieDict.prefixMap(input);
+                    for (Map.Entry<String, Vector<String>> entry : prefixMap.entrySet()) {
+                        if (!entry.getKey().equals(input)) {
+                            for (String match : entry.getValue()) {
+                                SuggestionAdapter.SuggestionEntry cangjieEntry =
+                                        new SuggestionAdapter.SuggestionEntry();
+                                cangjieEntry.input = curComposingText;
+                                cangjieEntry.output = match;
+                                cangjieEntry.annotation = HanjaDict.toCangjie(entry.getKey());
+                                cangjieEntry.freq = HanjaDict.frequencyMap.getOrDefault(match, 0);
+                                approxEntries.add(cangjieEntry);
+                            }
+                        }
+                    }
+                    approxEntries.sort((a, b) -> b.freq - a.freq);
+                    entries.addAll(approxEntries);
+                }
             }
         }
 
@@ -385,17 +432,22 @@ public class NouleKeyboardView extends ConstraintLayout {
                         ));
                     }
                     else {
-                        int layout = R.layout.keyboard_key_outlined;
+                        int theme;
                         switch (buttonStyle) {
                             case "flat":
-                                layout = R.layout.keyboard_key_flat;
+                                theme = R.style.Theme_Noule_FlatButton;
                                 break;
                             case "filled":
-                                layout = R.layout.keyboard_key_filled;
+                                theme = R.style.Theme_Noule_FilledButton;
+                                break;
+                            default:
+                                theme = R.style.Theme_Noule_OutlinedButton;
                                 break;
                         }
-                        KeyboardButton button = (KeyboardButton) inflater.inflate(
-                                layout, null, false);
+                        View buttonView = inflater
+                                .cloneInContext(new ContextThemeWrapper(getContext(), theme))
+                                .inflate(R.layout.keyboard_key, null, false);
+                        KeyboardButton button = buttonView.findViewById(R.id.button);
                         if (themeColor != null) {
                             button.setTextColor(themeColor);
                         }
@@ -415,7 +467,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                                     break;
                             }
                         }
-                        curRow.addView(button, new LinearLayout.LayoutParams(
+                        curRow.addView(buttonView, new LinearLayout.LayoutParams(
                             0,
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             1.0f
@@ -435,7 +487,14 @@ public class NouleKeyboardView extends ConstraintLayout {
                     ));
                 }
                 else {
-                    KeyboardButton button = (KeyboardButton) curRow.getChildAt(index);
+                    View buttonView = curRow.getChildAt(index);
+                    TextView smallText = buttonView.findViewById(R.id.hintTextView);
+                    if (HanjaDict.cangjieLayout.containsKey(key.toUpperCase())) {
+                        smallText.setText(HanjaDict.cangjieLayout.get(key.toUpperCase()));
+                    } else {
+                        smallText.setText("");
+                    }
+                    KeyboardButton button = buttonView.findViewById(R.id.button);
                     button.setText(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);
@@ -471,7 +530,8 @@ public class NouleKeyboardView extends ConstraintLayout {
                     } else {
                         button.setTextSize(20);
                     }
-                    button.setLayoutParams(new LinearLayout.LayoutParams(
+
+                    buttonView.setLayoutParams(new LinearLayout.LayoutParams(
                         0,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         weight
