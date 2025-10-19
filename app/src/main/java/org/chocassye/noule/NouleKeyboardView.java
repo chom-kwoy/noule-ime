@@ -448,8 +448,10 @@ public class NouleKeyboardView extends ConstraintLayout {
                                 .cloneInContext(new ContextThemeWrapper(getContext(), theme))
                                 .inflate(R.layout.keyboard_key, null, false);
                         KeyboardButton button = buttonView.findViewById(R.id.button);
+                        TextView smallText = buttonView.findViewById(R.id.hintTextView);
                         if (themeColor != null) {
                             button.setTextColor(themeColor);
+                            smallText.setTextColor(0x80000000 | (0xffffff & themeColor));
                         }
                         if (backgroundColor != null) {
                             button.setPopupBackgroundColor(backgroundColor);

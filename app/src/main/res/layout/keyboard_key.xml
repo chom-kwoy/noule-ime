@@ -8,8 +8,7 @@
     <org.chocassye.noule.KeyboardButton
         android:id="@+id/button"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        style="@style/Widget.MyApp.FlatButton"/>
+        android:layout_height="match_parent"/>
 
     <TextView
         android:id="@+id/hintTextView"

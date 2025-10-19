@@ -23,7 +23,7 @@
     <style name="Theme.Noule.FilledButton" parent="Theme.Noule">
         <item name="materialButtonStyle">@style/Widget.MyApp.FilledButton</item>
     </style>
-    <style name="Widget.MyApp.FlatButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+    <style name="Widget.MyApp.FlatButton" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:insetTop">4dp</item>
         <item name="android:insetBottom">4dp</item>
         <item name="android:insetLeft">2dp</item>

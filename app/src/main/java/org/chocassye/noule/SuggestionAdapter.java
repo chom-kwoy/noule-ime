@@ -96,8 +96,13 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Vi
             }
             if (entry.annotation != null) {
                 hintTextView.setText(entry.annotation);
-                if (entry.output.length() == 1 && entry.annotation.length() >= 4) {
-                    hintTextView.setScaleX(0.7f);
+                if (entry.output.codePointCount(0, entry.output.length()) == 1
+                        && entry.annotation.length() >= 4) {
+                    hintTextView.setScaleX(0.8f);
+                    hintTextView.setLetterSpacing(-0.1f);
+                } else {
+                    hintTextView.setScaleX(1.0f);
+                    hintTextView.setLetterSpacing(0.0f);
                 }
             } else {
                 hintTextView.setText("");
