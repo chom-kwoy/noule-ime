@@ -46,6 +46,10 @@ public class KeyboardButton extends MaterialButton {
         popupWindow.setAnimationStyle(R.style.PopupWindowAnimation);
     }
 
+    public void dismiss() {
+        popupWindow.dismiss();
+    }
+
     @Override
     public void setPressed(boolean pressed) {
         super.setPressed(pressed);

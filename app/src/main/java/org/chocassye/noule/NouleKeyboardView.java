@@ -235,6 +235,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     public void onFinishInputView(boolean finishingInput) {
         InputConnection ic = imeService.getCurrentInputConnection();
         finishComposing(ic);
+        switchLayoutSet(EN_LAYOUT);
     }
 
     public void switchLayoutSet(LayoutSet newLayoutSet) {
@@ -422,6 +423,15 @@ public class NouleKeyboardView extends ConstraintLayout {
         for (int rowIdx = 0; rowIdx < rows.length; ++rowIdx) {
             LinearLayout curRow = rows[rowIdx];
             if (curRow.getChildCount() != keys[rowIdx].length) {
+                // cleanup before removing all views
+                keyRepeatHandler.removeCallbacksAndMessages(null);
+                for (int i = 0; i < curRow.getChildCount(); ++i) {
+                    View v = curRow.getChildAt(i);
+                    KeyboardButton button = v.findViewById(R.id.button);
+                    if (button != null) {
+                        button.dismiss();
+                    }
+                }
                 curRow.removeAllViews();
                 for (String key : keys[rowIdx]) {
                     if (key.startsWith("space-")) {
