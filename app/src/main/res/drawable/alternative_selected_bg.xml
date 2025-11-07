@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="20dp" /> <!-- Adjust the radius as needed -->
+    <gradient
+        android:type="radial"
+        android:gradientRadius="50%p"
+        android:startColor="?android:attr/colorActivatedHighlight"
+        android:centerColor="?android:attr/colorActivatedHighlight"
+        android:endColor="#00FFFFFF"
+        android:centerX="50%"
+        android:centerY="50%" />
+</shape>
