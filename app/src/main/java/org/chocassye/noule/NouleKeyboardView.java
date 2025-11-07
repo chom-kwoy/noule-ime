@@ -15,6 +15,7 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
@@ -507,7 +508,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                         smallText.setText("");
                     }
                     KeyboardButton button = buttonView.findViewById(R.id.button);
-                    button.setText(key);
+                    button.setTextAndPopup(key);
                     button.setAllCaps(false);
                     button.setSingleLine(true);
                     button.setEllipsize(null);
@@ -518,7 +519,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     button.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             v.setPressed(true);
-                            this.onKeyPress(key, () -> {
+                            onKeyPress(key, () -> {
                                 v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                             });
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -527,9 +528,12 @@ public class NouleKeyboardView extends ConstraintLayout {
                             if (Build.VERSION.SDK_INT >= 27) {
                                 v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
                             }
-                            this.onKeyRelease(key);
+                            onKeyRelease(key);
                         }
                         return true;
+                    });
+                    button.setOnAlternativeSelectedListener(alternative -> {
+                        onAlternativeSelected(key, alternative);
                     });
 
                     button.setTextSize(15);
@@ -607,6 +611,18 @@ public class NouleKeyboardView extends ConstraintLayout {
                 return ic.deleteSurroundingText(1, 0);
             } else {
                 return ic.commitText("", 1);
+            }
+        }
+    }
+
+    private void onAlternativeSelected(String key, String alternative) {
+        if (imeService != null) {
+            InputConnection ic = imeService.getCurrentInputConnection();
+            if (curComposingText.endsWith(key)) {
+                String newText = (
+                    curComposingText.substring(0, curComposingText.length() - 1) + alternative
+                );
+                updateComposingText(ic, newText);
             }
         }
     }
