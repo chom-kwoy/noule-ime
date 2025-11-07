@@ -15,7 +15,6 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
@@ -430,7 +429,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     View v = curRow.getChildAt(i);
                     KeyboardButton button = v.findViewById(R.id.button);
                     if (button != null) {
-                        button.dismiss();
+                        button.dismissPopups();
                     }
                 }
                 curRow.removeAllViews();
@@ -531,7 +530,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                             }
                             onKeyRelease(key);
                         }
-                        return true;
+                        return false;
                     });
                     button.setOnAlternativeSelectedListener(alternative -> {
                         onAlternativeSelected(key, alternative);

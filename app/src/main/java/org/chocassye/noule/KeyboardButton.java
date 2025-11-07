@@ -1,11 +1,11 @@
 package org.chocassye.noule;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -23,7 +23,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.HashMap;
 
-public class KeyboardButton extends MaterialButton {
+public class KeyboardButton extends MaterialButton implements View.OnLongClickListener {
     public KeyboardButton(@NonNull Context context) {
         super(context);
         initialize();
@@ -39,12 +39,13 @@ public class KeyboardButton extends MaterialButton {
         initialize();
     }
 
-    private PopupWindow popupWindow;
-    private LinearLayout popupLinearLayout;
-    private TextView popupTextView;
+    private PopupWindow popupWindowSingle, popupWindowMultiple;
     private int lastSelectedIdx = -1;
-    private Handler longPressHandler;
     String[] alternatives;
+    boolean isLongClicked = false;
+    float lastX, lastY;
+
+    Handler handler;
 
     private static HashMap<String, String[]> ipaMap = new HashMap<>();
     static {
@@ -62,8 +63,8 @@ public class KeyboardButton extends MaterialButton {
 //        ipaMap.put("s", new String[]{ "ʂ", "ʃ", "ˢ", "ᶳ", "ᶴ" });
 //        ipaMap.put("d", new String[]{ "ɖ", "ᶑ", "ð", "ɗ", "ᵈ", "ᶞ" });
 //        ipaMap.put("f", new String[]{ "ɸ", "ᶠ", "ᶲ" });
-//        ipaMap.put("g", new String[]{ "ɣ", "ɢ", "g", "ɠ", "ʛ" });
-//        ipaMap.put("h", new String[]{ "ɦ", "ħ", "ʜ", "ɧ", "ʰ", "ʱ" });
+        ipaMap.put("g", new String[]{ "ɣ", "ɢ", "ɠ", "ʛ" });
+        ipaMap.put("h", new String[]{ "ɦ", "ħ", "ʜ", "ɧ", "ʰ", "ʱ" });
 //        ipaMap.put("j", new String[]{ "ʝ", "ɟ", "ʄ", "ʲ", "ᶨ", "ᶡ" });
 //        ipaMap.put("k", new String[]{ "ᵏ" });
 //        ipaMap.put("l", new String[]{ "ɬ", "ɭ", "ꞎ", "ʟ", "ɫ", "ɮ", "ˡ", "ᶩ", "ᶫ", "ʎ" });
@@ -79,17 +80,29 @@ public class KeyboardButton extends MaterialButton {
 
     void initialize() {
         LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-        View popupView = layoutInflater.inflate(R.layout.button_popup, null);
-        popupLinearLayout = popupView.findViewById(R.id.linearLayout);
-        popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
-        popupLinearLayout.addView(popupTextView);
-        popupWindow = new PopupWindow(popupView, 200, 100, false);
-        popupWindow.setAnimationStyle(R.style.PopupWindowAnimation);
-        longPressHandler = new Handler(Looper.getMainLooper());
+
+        // Layout for single letter
+        View popupSingle = layoutInflater.inflate(R.layout.button_popup, null);
+        LinearLayout popupSingleLinearLayout = popupSingle.findViewById(R.id.linearLayout);
+        TextView popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
+        popupSingleLinearLayout.addView(popupTextView);
+
+        popupWindowSingle = new PopupWindow(popupSingle, 200, 100, false);
+        popupWindowSingle.setAnimationStyle(R.style.PopupWindowAnimation);
+
+        // Layout for multiple candidates, shown when long pressed
+        View popupMultiple = layoutInflater.inflate(R.layout.button_popup, null);
+        popupWindowMultiple = new PopupWindow(popupMultiple, 200, 100, false);
+        popupWindowMultiple.setAnimationStyle(R.style.PopupWindowAnimation);
+
+        setOnLongClickListener(this);
+
+        handler = new Handler(Looper.getMainLooper());
     }
 
-    public void dismiss() {
-        popupWindow.dismiss();
+    public void dismissPopups() {
+        popupWindowSingle.dismiss();
+        popupWindowMultiple.dismiss();
     }
 
     @Override
@@ -121,31 +134,66 @@ public class KeyboardButton extends MaterialButton {
                     getContext().getResources().getDisplayMetrics()
             );
             drawable.setStroke(strokeWidthInPx, getCurrentTextColor());
-            popupLinearLayout.setBackground(drawable);
+
+            LinearLayout popupSingleLinearLayout =
+                    popupWindowSingle.getContentView().findViewById(R.id.linearLayout);
+            popupSingleLinearLayout.setBackground(drawable);
+
+            LinearLayout popupMultipleLinearLayout =
+                    popupWindowMultiple.getContentView().findViewById(R.id.linearLayout);
+            popupMultipleLinearLayout.setBackground(drawable);
         }
     }
 
     public void setTextAndPopup(CharSequence text) {
-        LayoutInflater layoutInflater = LayoutInflater.from(getContext());
+        // Set button text itself
         setText(text);
+
+        // Set single popup view
+        LinearLayout popupSingleLinearLayout =
+                popupWindowSingle.getContentView().findViewById(R.id.linearLayout);
+        TextView popupTextView = (TextView) popupSingleLinearLayout.getChildAt(0);
+        popupTextView.setText(getText());
+        popupTextView.setTextColor(getCurrentTextColor());
+
+        // Set candidates popup view
+        LinearLayout popupMultipleLinearLayout =
+                popupWindowMultiple.getContentView().findViewById(R.id.linearLayout);
+        popupMultipleLinearLayout.removeAllViews();
+
         alternatives = ipaMap.get(text.toString());
         if (alternatives != null) {
-            popupLinearLayout.removeAllViews();
+            LayoutInflater layoutInflater = LayoutInflater.from(getContext());
             for (String alternative : alternatives) {
                 popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
                 popupTextView.setText(alternative);
                 popupTextView.setTextColor(getCurrentTextColor());
-                popupLinearLayout.addView(popupTextView);
+                popupMultipleLinearLayout.addView(popupTextView);
             }
-        } else {
-            if (popupLinearLayout.getChildCount() != 1) {
-                popupLinearLayout.removeAllViews();
-                popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
-                popupLinearLayout.addView(popupTextView);
-            }
-            popupTextView.setText(getText());
-            popupTextView.setTextColor(getCurrentTextColor());
         }
+    }
+
+    private void setPopupSizes(PopupWindow popupWindow, LinearLayout popupLinearLayout) {
+        for (int i = 0; i < popupLinearLayout.getChildCount(); ++i) {
+            TextView textView = (TextView) popupLinearLayout.getChildAt(i);
+            textView.setWidth(getWidth());
+        }
+        popupLinearLayout.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popupWindow.setWidth(popupLinearLayout.getMeasuredWidth());
+        popupWindow.setHeight(getHeight());
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        Log.i("MYLOG", "onLongClick");
+        if (alternatives != null) {
+            isLongClicked = true;
+            lastSelectedIdx = -1;
+            popupWindowSingle.dismiss();
+            showPopup(popupWindowMultiple);
+        }
+        handler.postDelayed(() -> handleTouchMoveEvent(lastX, lastY), 50);
+        return true;
     }
 
     public interface OnAlternativeSelectedListener {
@@ -157,65 +205,87 @@ public class KeyboardButton extends MaterialButton {
         onAlternativeSelectedListener = listener;
     }
 
+    private void showPopup(PopupWindow popupWindow) {
+        setPopupSizes(popupWindow, popupWindow.getContentView().findViewById(R.id.linearLayout));
+
+        int[] location = new int[2];
+        this.getLocationInWindow(location);
+        int popupX = location[0] - (popupWindow.getWidth() - getWidth()) / 2;
+        int popupY = location[1] - popupWindow.getHeight();
+        popupWindow.showAtLocation(this, Gravity.NO_GRAVITY, popupX, popupY);
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+        lastX = event.getX();
+        lastY = event.getY();
+
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            for (int i = 0; i < popupLinearLayout.getChildCount(); ++i) {
-                TextView textView = (TextView) popupLinearLayout.getChildAt(i);
-                textView.setWidth(getWidth());
-            }
-            popupLinearLayout.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            popupWindow.setWidth(popupLinearLayout.getMeasuredWidth());
-            popupWindow.setHeight(getHeight());
+            showPopup(popupWindowSingle);
 
-            int[] location = new int[2];
-            this.getLocationInWindow(location);
-            int popupX = location[0] - (popupWindow.getWidth() - getWidth()) / 2;
-            int popupY = location[1] - popupWindow.getHeight();
-            popupWindow.showAtLocation(this, Gravity.NO_GRAVITY, popupX, popupY);
+            isLongClicked = false;
 
-            lastSelectedIdx = -1;
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            popupWindow.dismiss();
-            if (lastSelectedIdx != -1 && onAlternativeSelectedListener != null) {
-                if (alternatives != null && lastSelectedIdx < alternatives.length) {
-                    onAlternativeSelectedListener.onAlternativeSelectedEvent(
-                            alternatives[lastSelectedIdx]
-                    );
-                }
-            }
-        } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            int[] location = new int[2];
-            this.getLocationOnScreen(location);
+            dismissPopups();
 
-            float touchX = location[0] + event.getX();
-            float touchY = location[1] + event.getY();
-
-            int selectedIdx = -1;
-            for (int i = 0; i < popupLinearLayout.getChildCount(); ++i) {
-                TextView textView = (TextView) popupLinearLayout.getChildAt(i);
-                int[] textViewLocation = new int[2];
-                textView.getLocationOnScreen(textViewLocation);
-                float startX = textViewLocation[0];
-                float endX = textViewLocation[0] + textView.getWidth();
-
-                if (selectedIdx == -1 && startX < touchX && touchX <= endX) {
-                    selectedIdx = i;
-                    if (lastSelectedIdx != -1 && lastSelectedIdx != selectedIdx) {
-                        textView.setBackgroundResource(R.drawable.alternative_selected_bg);
+            // Propagate alternative selected event
+            if (isLongClicked) {
+                if (lastSelectedIdx != -1 && onAlternativeSelectedListener != null) {
+                    if (alternatives != null && lastSelectedIdx < alternatives.length) {
+                        onAlternativeSelectedListener.onAlternativeSelectedEvent(
+                                alternatives[lastSelectedIdx]
+                        );
                     }
                 }
-                else {
-                    textView.setBackground(null);
-                }
             }
 
-            if (lastSelectedIdx != -1 && selectedIdx != -1
-                    && selectedIdx != lastSelectedIdx) {
-                this.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-            }
-            lastSelectedIdx = selectedIdx;
+            isLongClicked = false;
+
+        } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            handleTouchMoveEvent(event.getX(), event.getY());
         }
+
         return super.dispatchTouchEvent(event);
+    }
+
+    private void handleTouchMoveEvent(float x, float y) {
+        if (!isLongClicked) {
+            return;
+        }
+
+        int[] location = new int[2];
+        this.getLocationOnScreen(location);
+
+        float touchX = location[0] + x;
+        float touchY = location[1] + y;
+
+        int selectedIdx = -1;
+        LinearLayout popupLinearLayout =
+                popupWindowMultiple.getContentView().findViewById(R.id.linearLayout);
+        for (int i = 0; i < popupLinearLayout.getChildCount(); ++i) {
+            TextView textView = (TextView) popupLinearLayout.getChildAt(i);
+            int[] textViewLocation = new int[2];
+            textView.getLocationOnScreen(textViewLocation);
+
+            float startX = textViewLocation[0];
+            float endX = textViewLocation[0] + textView.getWidth();
+
+            if (selectedIdx == -1 && startX < touchX && touchX <= endX) {
+                selectedIdx = i;
+                if (lastSelectedIdx != selectedIdx) {
+                    textView.setBackgroundResource(R.drawable.alternative_selected_bg);
+                }
+            }
+            else {
+                textView.setBackground(null);
+            }
+        }
+
+        if (selectedIdx != -1 && selectedIdx != lastSelectedIdx) {
+            if (lastSelectedIdx != -1) {  // first candidate selection already has long press feedback
+                this.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            }
+        }
+        lastSelectedIdx = selectedIdx;
     }
 }
