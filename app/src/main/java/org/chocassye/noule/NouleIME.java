@@ -2,10 +2,8 @@ package org.chocassye.noule;
 
 import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
-import android.os.Build;
 import android.view.ContextThemeWrapper;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.Nullable;
@@ -66,33 +64,6 @@ public class NouleIME extends InputMethodService implements SharedPreferences.On
         SymbolData.initialize(getAssets());
 
         setInputView(createInputView());
-    }
-
-    @Override
-    public void onInitializeInterface() {
-        super.onInitializeInterface();
-
-        // Get the window of the IME
-        Window window = getWindow().getWindow();
-
-        if (window != null) {
-            // This flag is often needed to correctly position the IME window
-            // and have it respect system bars/insets.
-            window.getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            );
-
-            // You can also try setting decor fits system windows to true,
-            // which often helps with respecting insets like the navigation bar.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                window.setDecorFitsSystemWindows(true);
-            }
-
-            // If you are setting a background color, use FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
-            // to ensure the system handles the drawing area correctly.
-            // window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        }
     }
 
     @Override
