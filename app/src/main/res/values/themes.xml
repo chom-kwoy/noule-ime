@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Noule" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Noule" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">#1565C0</item>          <!-- A medium blue (calm, professional) -->
         <item name="colorPrimaryVariant">#0D47A1</item>   <!-- A darker blue for status bar -->

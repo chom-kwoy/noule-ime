@@ -55,7 +55,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     public static class LayoutSet {
         public String[][] lowerLayout;
         public String[][] upperLayout;
-    };
+    }
 
     private static final LayoutSet EN_LAYOUT = new LayoutSet();
     private static final LayoutSet KO_LAYOUT = new LayoutSet();
@@ -516,6 +516,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     button.setTextAlignment(TEXT_ALIGNMENT_CENTER);
                     button.setGravity(Gravity.CENTER);
                     button.setClickable(true);
+                    button.setLongClickable(true);
                     button.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             v.setPressed(true);

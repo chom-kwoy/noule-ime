@@ -34,6 +34,7 @@ android {
 dependencies {
 
     implementation(libs.appcompat)
+    implementation("androidx.core:core-ktx:1.17.0")
     implementation(libs.material)
     implementation(libs.preference)
     implementation("com.github.skydoves:colorpickerview:2.3.0")
