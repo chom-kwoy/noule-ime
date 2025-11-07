@@ -235,7 +235,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     public void onFinishInputView(boolean finishingInput) {
         InputConnection ic = imeService.getCurrentInputConnection();
         finishComposing(ic);
-        switchLayoutSet(EN_LAYOUT);
+        switchLayoutSet(curLayoutSet);
     }
 
     public void switchLayoutSet(LayoutSet newLayoutSet) {
