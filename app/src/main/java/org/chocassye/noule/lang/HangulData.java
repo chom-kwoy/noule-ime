@@ -93,7 +93,8 @@ public class HangulData {
         consInfoMap.put("ㅽ", new ConsInfo("ㅽ", "ᄲ", "ᇪ"));
         consInfoMap.put("ㅾ", new ConsInfo("ㅾ", "ᄶ", "ퟯ"));
         consInfoMap.put("ㅿ", new ConsInfo("ㅿ", "ᅀ", "ᇫ"));
-        consInfoMap.put("ㆀ", new ConsInfo("ㆀ", "ᅇ", "ᇮ"));
+        consInfoMap.put("ㆀ", new ConsInfo("ㆀ", "ᅇ", null));
+        consInfoMap.put("ᇮ", new ConsInfo("ᇮ", null, "ᇮ"));
         consInfoMap.put("ㆁ", new ConsInfo("ㆁ", "ᅌ", "ᇰ"));
         consInfoMap.put("ㆂ", new ConsInfo("ㆂ", null, "ᇱ"));
         consInfoMap.put("ㆃ", new ConsInfo("ㆃ", null, "ᇲ"));
@@ -126,7 +127,8 @@ public class HangulData {
         consInfoMap.put("ᄽ", new ConsInfo("ᄽ", "ᄽ", null));
         consInfoMap.put("ᄾ", new ConsInfo("ᄾ", "ᄾ", null));
         consInfoMap.put("ᄿ", new ConsInfo("ᄿ", "ᄿ", null));
-        consInfoMap.put("ᅁ", new ConsInfo("ᅁ", "ᅁ", "ᇬ"));
+        consInfoMap.put("ᅁ", new ConsInfo("ᅁ", "ᅁ", null));
+        consInfoMap.put("ᇬ", new ConsInfo("ᇬ", null, "ᇬ"));
         consInfoMap.put("ᅂ", new ConsInfo("ᅂ", "ᅂ", null));
         consInfoMap.put("ᅃ", new ConsInfo("ᅃ", "ᅃ", null));
         consInfoMap.put("ᅄ", new ConsInfo("ᅄ", "ᅄ", null));
@@ -375,6 +377,7 @@ public class HangulData {
         composeMap.put("ㅅㅂ", "ㅽ");
         composeMap.put("ㅅㅈ", "ㅾ");
         composeMap.put("ㅇㅇ", "ㆀ");
+        composeMap.put("ㆁㆁ", "ᇮ");
         composeMap.put("ㆁㅅ", "ㆂ");
         composeMap.put("ㆁㅿ", "ㆃ");
         composeMap.put("ㅍㅇ", "ㆄ");
@@ -411,6 +414,7 @@ public class HangulData {
         composeMap.put("ᄼᄼ", "ᄽ");
         composeMap.put("ᄾᄾ", "ᄿ");
         composeMap.put("ㅇㄱ", "ᅁ");
+        composeMap.put("ㆁㄱ", "ᇬ");
         composeMap.put("ㅇㄷ", "ᅂ");
         composeMap.put("ㅇㅁ", "ᅃ");
         composeMap.put("ㅇㅂ", "ᅄ");
@@ -486,8 +490,8 @@ public class HangulData {
         composeMap.put("ㅁㅎ", "ᇡ");
         composeMap.put("ㅂㄹ", "ᇣ");
         composeMap.put("ㅂㅎ", "ꥴ");
-        composeMap.put("ㅇㄱㄱ", "ᇭ");
-        composeMap.put("ㅇㅋ", "ᇯ");
+        composeMap.put("ㆁㄱㄱ", "ᇭ");
+        composeMap.put("ㆁㅋ", "ᇯ");
         composeMap.put("ㅎㄴ", "ᇵ");
         composeMap.put("ㅎㄹ", "ᇶ");
         composeMap.put("ㅎㅁ", "ᇷ");
