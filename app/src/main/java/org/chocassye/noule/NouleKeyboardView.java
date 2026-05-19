@@ -109,6 +109,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private int expectedSelEndPos = 0;
     private SuggestionAdapter suggestionAdapter;
     private boolean ignoreOnce = false;
+    private boolean pendingUnshift = false;
 
     private Integer themeColor, backgroundColor, buttonColor;
     private String buttonStyle;
@@ -680,11 +681,7 @@ public class NouleKeyboardView extends ConstraintLayout {
             }
             else {
                 typeSymbol(ic, key);
-
-                // Return back to un-shifted layout
-                if (curLayout == curLayoutSet.upperLayout) {
-                    setCurKeyLayout(curLayoutSet.lowerLayout);
-                }
+                pendingUnshift = (curLayout == curLayoutSet.upperLayout);
             }
         }
     }
@@ -692,6 +689,10 @@ public class NouleKeyboardView extends ConstraintLayout {
     private void onKeyRelease(String key) {
         if (key.equals("Back")) {
             keyRepeatHandler.removeCallbacksAndMessages(null);
+        }
+        if (pendingUnshift) {
+            setCurKeyLayout(curLayoutSet.lowerLayout);
+            pendingUnshift = false;
         }
     }
 }
