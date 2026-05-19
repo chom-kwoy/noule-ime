@@ -640,70 +640,96 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     private void onKeyPress(String key, Runnable makeHapticFeedback) {
-        if (imeService != null) {
-            InputConnection ic = imeService.getCurrentInputConnection();
+        if (imeService == null) return;
 
+        // Layout-switching keys work without an InputConnection.
+        if (key.equals("Shift")) {
             makeHapticFeedback.run();
+            if (curLayout == curLayoutSet.lowerLayout) {
+                setCurKeyLayout(curLayoutSet.upperLayout);
+            } else {
+                setCurKeyLayout(curLayoutSet.lowerLayout);
+            }
+            return;
+        }
+        if (key.equals("KO")) {
+            makeHapticFeedback.run();
+            switchLayoutSet(KO_LAYOUT);
+            return;
+        }
+        if (key.equals("EN")) {
+            makeHapticFeedback.run();
+            switchLayoutSet(EN_LAYOUT);
+            return;
+        }
+        if (key.equals("!#?")) {
+            makeHapticFeedback.run();
+            prevLayoutSet = curLayoutSet;
+            prevLayout = curLayout;
+            switchLayoutSet(SPECIAL_LAYOUT);
+            return;
+        }
+        if (key.equals("Prev")) {
+            makeHapticFeedback.run();
+            switchLayoutSet(prevLayoutSet);
+            setCurKeyLayout(prevLayout);
+            return;
+        }
 
-            if (key.equals("Back")) {
-                keyRepeatHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean success = doBackspace(ic);
-                        if (success) {
-                            makeHapticFeedback.run();
-                        }
-                        keyRepeatHandler.postDelayed(this, REPEAT_INTERVAL);
+        InputConnection ic = imeService.getCurrentInputConnection();
+        if (ic == null) {
+            // IC not yet established (race on the first keypress after the keyboard appears).
+            // Schedule one retry — do NOT fire haptic yet so there's no false feedback.
+            keyRepeatHandler.postDelayed(() -> {
+                if (imeService == null) return;
+                InputConnection retryIc = imeService.getCurrentInputConnection();
+                if (retryIc == null) return;
+                makeHapticFeedback.run();
+                processKeyWithIC(key, retryIc, makeHapticFeedback);
+            }, 50);
+            return;
+        }
+
+        makeHapticFeedback.run();
+        processKeyWithIC(key, ic, makeHapticFeedback);
+    }
+
+    private void processKeyWithIC(String key, InputConnection ic, Runnable makeHapticFeedback) {
+        if (key.equals("Back")) {
+            keyRepeatHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    boolean success = doBackspace(ic);
+                    if (success) {
+                        makeHapticFeedback.run();
                     }
-                }, INITIAL_REPEAT_INTERVAL);
-                doBackspace(ic);
-            }
-            else if (key.equals("Shift")) {
-                if (curLayout == curLayoutSet.lowerLayout) {
-                    setCurKeyLayout(curLayoutSet.upperLayout);
+                    keyRepeatHandler.postDelayed(this, REPEAT_INTERVAL);
                 }
-                else {
-                    setCurKeyLayout(curLayoutSet.lowerLayout);
-                }
-            }
-            else if (key.equals("KO")) {
-                switchLayoutSet(KO_LAYOUT);
-            }
-            else if (key.equals("EN")) {
-                switchLayoutSet(EN_LAYOUT);
-            }
-            else if (key.equals("!#?")) {
-                prevLayoutSet = curLayoutSet;
-                prevLayout = curLayout;
-                switchLayoutSet(SPECIAL_LAYOUT);
-            }
-            else if (key.equals("Prev")) {
-                switchLayoutSet(prevLayoutSet);
-                setCurKeyLayout(prevLayout);
-            }
-            else if (key.equals("Enter")) {
-                finishComposing(ic);
+            }, INITIAL_REPEAT_INTERVAL);
+            doBackspace(ic);
+        }
+        else if (key.equals("Enter")) {
+            finishComposing(ic);
 
-                int imeAction = curEditorInfo != null
-                        ? (curEditorInfo.imeOptions & EditorInfo.IME_MASK_ACTION)
-                        : EditorInfo.IME_ACTION_UNSPECIFIED;
-                boolean noEnterAction = curEditorInfo != null
-                        && (curEditorInfo.imeOptions & EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0;
-                boolean isMultiline = curEditorInfo != null
-                        && (curEditorInfo.inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0;
+            int imeAction = curEditorInfo != null
+                    ? (curEditorInfo.imeOptions & EditorInfo.IME_MASK_ACTION)
+                    : EditorInfo.IME_ACTION_UNSPECIFIED;
+            boolean noEnterAction = curEditorInfo != null
+                    && (curEditorInfo.imeOptions & EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0;
+            boolean isMultiline = curEditorInfo != null
+                    && (curEditorInfo.inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0;
 
-                if (noEnterAction || isMultiline
-                        || imeAction == EditorInfo.IME_ACTION_NONE
-                        || imeAction == EditorInfo.IME_ACTION_UNSPECIFIED) {
-                    ic.commitText("\n", 1);
-                } else {
-                    ic.performEditorAction(imeAction);
-                }
+            if (noEnterAction || isMultiline
+                    || imeAction == EditorInfo.IME_ACTION_NONE
+                    || imeAction == EditorInfo.IME_ACTION_UNSPECIFIED) {
+                ic.commitText("\n", 1);
+            } else {
+                ic.performEditorAction(imeAction);
             }
-            else {
-                typeSymbol(ic, key);
-                pendingUnshift = (curLayout == curLayoutSet.upperLayout);
-            }
+        }
+        else {
+            typeSymbol(ic, key);
+            pendingUnshift = (curLayout == curLayoutSet.upperLayout);
         }
     }
 
