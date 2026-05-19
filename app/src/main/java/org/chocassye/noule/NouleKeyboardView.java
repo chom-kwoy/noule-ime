@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.InputType;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
@@ -110,6 +111,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private SuggestionAdapter suggestionAdapter;
     private boolean ignoreOnce = false;
     private boolean pendingUnshift = false;
+    private EditorInfo curEditorInfo = null;
 
     private Integer themeColor, backgroundColor, buttonColor;
     private String buttonStyle;
@@ -224,6 +226,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     public void onStartInputView(EditorInfo editorInfo, boolean restarting) {
+        curEditorInfo = editorInfo;
         InputConnection ic = imeService.getCurrentInputConnection();
         finishComposing(ic);
     }
@@ -673,11 +676,21 @@ public class NouleKeyboardView extends ConstraintLayout {
             else if (key.equals("Enter")) {
                 finishComposing(ic);
 
-                long eventTime = SystemClock.uptimeMillis();
-                // Send ACTION_DOWN for the Enter key
-                ic.sendKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0));
-                // Send ACTION_UP for the Enter key
-                ic.sendKeyEvent(new KeyEvent(SystemClock.uptimeMillis(), eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER, 0));
+                int imeAction = curEditorInfo != null
+                        ? (curEditorInfo.imeOptions & EditorInfo.IME_MASK_ACTION)
+                        : EditorInfo.IME_ACTION_UNSPECIFIED;
+                boolean noEnterAction = curEditorInfo != null
+                        && (curEditorInfo.imeOptions & EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0;
+                boolean isMultiline = curEditorInfo != null
+                        && (curEditorInfo.inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0;
+
+                if (noEnterAction || isMultiline
+                        || imeAction == EditorInfo.IME_ACTION_NONE
+                        || imeAction == EditorInfo.IME_ACTION_UNSPECIFIED) {
+                    ic.commitText("\n", 1);
+                } else {
+                    ic.performEditorAction(imeAction);
+                }
             }
             else {
                 typeSymbol(ic, key);
