@@ -6,47 +6,53 @@ import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.preference.PreferenceManager;
 
 import org.chocassye.noule.lang.HanjaDict;
 import org.chocassye.noule.lang.SymbolData;
 
-public class NouleIME extends InputMethodService implements SharedPreferences.OnSharedPreferenceChangeListener  {
+public class NouleIME extends InputMethodService implements SharedPreferences.OnSharedPreferenceChangeListener {
     private NouleKeyboardView inputView;
+    private int cachedBottomInset = 0;
 
     private View createInputView() {
         inputView = (NouleKeyboardView) getLayoutInflater()
                 .cloneInContext(new ContextThemeWrapper(this, R.style.Theme_Noule))
                 .inflate(R.layout.keyboard, null);
 
-        // Pad bottom for android 16
-        ViewCompat.setOnApplyWindowInsetsListener(
-                inputView,
-                (v, insets) -> {
-                    // 1. Get the Insets object for system bars (status bar + navigation bar)
-                    androidx.core.graphics.Insets systemBarsInsets =
-                            insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        // Apply last-known inset immediately so recreated views (e.g. pref changes)
+        // never flash without padding even before the listener fires.
+        inputView.setPadding(0, 0, 0, cachedBottomInset);
 
-                    // 2. Extract the bottom inset size
-                    int bottomInsetSize = systemBarsInsets.bottom; // This is the size in pixels
+        // Fallback: if setDecorFitsSystemWindows didn't fully prevent the window from
+        // extending behind the nav bar, keep the padding in sync via the insets listener.
+        ViewCompat.setOnApplyWindowInsetsListener(inputView, (v, insets) -> {
+            int bottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            if (bottom != cachedBottomInset) {
+                cachedBottomInset = bottom;
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottom);
+            }
+            return insets;
+        });
 
-                    // --- Use the bottomInsetSize here ---
-                    // For example, to apply it as bottom padding to a specific view:
-                    inputView.setPadding(
-                            inputView.getPaddingLeft(),
-                            inputView.getPaddingTop(),
-                            inputView.getPaddingRight(),
-                            bottomInsetSize // Apply the calculated bottom inset
-                    );
-                    return insets;
-                }
-        );
+        // Request insets dispatch as soon as the view attaches so the listener fires
+        // before the first draw rather than after it.
+        inputView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(@NonNull View v) {
+                ViewCompat.requestApplyInsets(v);
+                v.removeOnAttachStateChangeListener(this);
+            }
+            @Override
+            public void onViewDetachedFromWindow(@NonNull View v) {}
+        });
 
         inputView.setParentService(this);
-
         return inputView;
     }
 
@@ -54,16 +60,18 @@ public class NouleIME extends InputMethodService implements SharedPreferences.On
     public void onCreate() {
         super.onCreate();
 
-        // Detect preference updates
+        // Primary fix for Android 16: tell the IME window not to extend behind
+        // system bars so the keyboard is always positioned above the nav bar.
+        if (getWindow() != null && getWindow().getWindow() != null) {
+            WindowCompat.setDecorFitsSystemWindows(getWindow().getWindow(), true);
+        }
+
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.registerOnSharedPreferenceChangeListener(this);
 
-        // Load data from assets
         HanjaDict.initializeAsync(getAssets());
         SymbolData.initialize(getAssets());
-
-        setInputView(createInputView());
     }
 
     @Override
@@ -123,7 +131,6 @@ public class NouleIME extends InputMethodService implements SharedPreferences.On
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
-        // Recreate input view
         setInputView(createInputView());
     }
 }
