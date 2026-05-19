@@ -19,6 +19,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import android.media.AudioManager;
+
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -136,7 +138,7 @@ public class KeyboardButton extends MaterialButton {
                 lastSelectedIdx = -1;
                 popupWindowSingle.dismiss();
                 showPopup(popupWindowMultiple);
-                performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                 handler.postDelayed(() -> handleTouchMoveEvent(lastX, lastY), 50);
             }
         };
@@ -251,6 +253,13 @@ public class KeyboardButton extends MaterialButton {
         container.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         popupWindow.setWidth(container.getMeasuredWidth());
         popupWindow.setHeight(getHeight() * (isMultiRow ? container.getChildCount() : 1));
+    }
+
+    private void doHapticFeedback(int constant) {
+        AudioManager am = (AudioManager) getContext().getSystemService(android.content.Context.AUDIO_SERVICE);
+        if (am == null || am.getRingerMode() != AudioManager.RINGER_MODE_SILENT) {
+            performHapticFeedback(constant);
+        }
     }
 
     private List<TextView> getMultiplePopupTextViews() {
@@ -381,7 +390,7 @@ public class KeyboardButton extends MaterialButton {
 
         if (selectedIdx != -1 && selectedIdx != lastSelectedIdx) {
             if (lastSelectedIdx != -1) {
-                this.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                this.doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
         }
         lastSelectedIdx = selectedIdx;

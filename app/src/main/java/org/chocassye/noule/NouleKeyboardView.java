@@ -6,6 +6,7 @@ import static org.chocassye.noule.lang.HangulData.isHangulString;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -170,7 +171,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         suggestionAdapter.setOnTouchListener((v, event, entry) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 v.setPressed(true);
-                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                haptic(v, HapticFeedbackConstants.KEYBOARD_TAP);
             }
             else if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.setPressed(false);
@@ -524,13 +525,13 @@ public class NouleKeyboardView extends ConstraintLayout {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             v.setPressed(true);
                             onKeyPress(key, () -> {
-                                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                                haptic(v, HapticFeedbackConstants.KEYBOARD_TAP);
                             });
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
                             v.performClick();
                             v.setPressed(false);
                             if (Build.VERSION.SDK_INT >= 27) {
-                                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
+                                haptic(v, HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
                             }
                             onKeyRelease(key);
                         }
@@ -628,6 +629,13 @@ public class NouleKeyboardView extends ConstraintLayout {
                 );
                 updateComposingText(ic, newText);
             }
+        }
+    }
+
+    private void haptic(View v, int constant) {
+        AudioManager am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+        if (am == null || am.getRingerMode() != AudioManager.RINGER_MODE_SILENT) {
+            v.performHapticFeedback(constant);
         }
     }
 
