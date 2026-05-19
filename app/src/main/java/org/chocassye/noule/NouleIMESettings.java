@@ -7,7 +7,10 @@ import android.provider.Settings;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -27,6 +30,13 @@ public class NouleIMESettings extends AppCompatActivity {
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         // Set the Toolbar as the Activity's ActionBar
         setSupportActionBar(toolbar);
+
+        // Push toolbar content below the status bar; toolbar background bleeds into it.
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars());
+            v.setPadding(0, insets.top, 0, 0);
+            return windowInsets;
+        });
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
