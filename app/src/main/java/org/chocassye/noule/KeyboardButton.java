@@ -322,7 +322,7 @@ public class KeyboardButton extends MaterialButton {
         this.getLocationOnScreen(location);
 
         float touchX = location[0] + x;
-        float touchY = location[1] + y;
+        float touchY = location[1] + y - getHeight();
 
         int selectedIdx = -1;
         List<TextView> textViews = getMultiplePopupTextViews();
