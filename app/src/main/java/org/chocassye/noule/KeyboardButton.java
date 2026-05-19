@@ -21,7 +21,9 @@ import androidx.annotation.Nullable;
 
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class KeyboardButton extends MaterialButton {
     public KeyboardButton(@NonNull Context context) {
@@ -48,35 +50,37 @@ public class KeyboardButton extends MaterialButton {
     Handler handler;
     private Runnable longPressRunnable;
 
+    private static final int MAX_PER_ROW = 6;
+
     private static HashMap<String, String[]> ipaMap = new HashMap<>();
     static {
-//        ipaMap.put("q", new String[]{ "ʠ", "ɋ" });
-//        ipaMap.put("w", new String[]{ "ʍ", "ɰ", "ʷ", "ᶭ" });
-//        ipaMap.put("e", new String[]{ "ɘ", "ə", "ɚ", "ɛ", "ɜ", "ɞ", "ɝ", "ᵉ", "ᵊ", "ᵋ", "ᶟ" });
-//        ipaMap.put("r", new String[]{ "ɾ", "ɽ", "ɹ", "ɻ", "ɺ", "ʀ", "ʁ", "ʳ", "ʴ", "ʵ", "ʶ" });
-//        ipaMap.put("t", new String[]{ "ʈ", "θ", "ᵗ", "ᶿ" });
-//        ipaMap.put("y", new String[]{ "ʏ", "ɤ", "ɥ", "ʸ", "ᶣ" });
-//        ipaMap.put("u", new String[]{ "ʉ", "ɯ", "ʊ", "ᵘ", "ᶶ", "ᵚ", "ᶷ" });
-//        ipaMap.put("i", new String[]{ "ɨ", "ɪ", "ⁱ", "ᶤ", "ᶦ" });
-//        ipaMap.put("o", new String[]{ "ɔ", "ø", "ɵ", "œ", "ɶ", "ᵒ", "ᵓ", "ᶱ", "ꟹ" });
-//        ipaMap.put("p", new String[]{ "ᵖ" });
-//        ipaMap.put("a", new String[]{ "ɐ", "æ", "ɑ", "ɒ", "ᵃ", "ᵄ", "ᵅ", "ᶛ" });
-//        ipaMap.put("s", new String[]{ "ʂ", "ʃ", "ˢ", "ᶳ", "ᶴ" });
-//        ipaMap.put("d", new String[]{ "ɖ", "ᶑ", "ð", "ɗ", "ᵈ", "ᶞ" });
-//        ipaMap.put("f", new String[]{ "ɸ", "ᶠ", "ᶲ" });
+        ipaMap.put("q", new String[]{ "ʠ", "ɋ" });
+        ipaMap.put("w", new String[]{ "ʍ", "ɰ", "ʷ", "ᶭ" });
+        ipaMap.put("e", new String[]{ "ɘ", "ə", "ɚ", "ɛ", "ɜ", "ɞ", "ɝ", "ᵉ", "ᵊ", "ᵋ", "ᶟ" });
+        ipaMap.put("r", new String[]{ "ɾ", "ɽ", "ɹ", "ɻ", "ɺ", "ʀ", "ʁ", "ʳ", "ʴ", "ʵ", "ʶ" });
+        ipaMap.put("t", new String[]{ "ʈ", "θ", "ᵗ", "ᶿ" });
+        ipaMap.put("y", new String[]{ "ʏ", "ɤ", "ɥ", "ʸ", "ᶣ" });
+        ipaMap.put("u", new String[]{ "ʉ", "ɯ", "ʊ", "ᵘ", "ᶶ", "ᵚ", "ᶷ" });
+        ipaMap.put("i", new String[]{ "ɨ", "ɪ", "ⁱ", "ᶤ", "ᶦ" });
+        ipaMap.put("o", new String[]{ "ɔ", "ø", "ɵ", "œ", "ɶ", "ᵒ", "ᵓ", "ᶱ", "ꟹ" });
+        ipaMap.put("p", new String[]{ "ᵖ" });
+        ipaMap.put("a", new String[]{ "ɐ", "æ", "ɑ", "ɒ", "ᵃ", "ᵄ", "ᵅ", "ᶛ" });
+        ipaMap.put("s", new String[]{ "ʂ", "ʃ", "ˢ", "ᶳ", "ᶴ" });
+        ipaMap.put("d", new String[]{ "ɖ", "ᶑ", "ð", "ɗ", "ᵈ", "ᶞ" });
+        ipaMap.put("f", new String[]{ "ɸ", "ᶠ", "ᶲ" });
         ipaMap.put("g", new String[]{ "ɣ", "ɢ", "ɠ", "ʛ" });
         ipaMap.put("h", new String[]{ "ɦ", "ħ", "ʜ", "ɧ", "ʰ", "ʱ" });
-//        ipaMap.put("j", new String[]{ "ʝ", "ɟ", "ʄ", "ʲ", "ᶨ", "ᶡ" });
-//        ipaMap.put("k", new String[]{ "ᵏ" });
-//        ipaMap.put("l", new String[]{ "ɬ", "ɭ", "ꞎ", "ʟ", "ɫ", "ɮ", "ˡ", "ᶩ", "ᶫ", "ʎ" });
-//        ipaMap.put("z", new String[]{ "ʐ", "ʑ", "ʒ", "ᶻ", "ᶼ", "ᶽ", "ᶾ" });
-//        ipaMap.put("x", new String[]{ "ꭓ", "ˣ", "ᵡ" });
-//        ipaMap.put("c", new String[]{ "ç", "ɕ", "ᶜ", "ᶝ" });
-//        ipaMap.put("v", new String[]{ "ʋ", "ⱱ", "ʌ", "ᵛ", "ᶹ", "ᶺ" });
-//        ipaMap.put("b", new String[]{ "ɓ", "β", "ʙ", "ᵇ", "ᵝ" });
-//        ipaMap.put("n", new String[]{ "ɳ", "ɲ", "ŋ", "ɴ", "ⁿ", "ᶮ", "ᶯ", "ᵑ", "ᶰ" });
-//        ipaMap.put("m", new String[]{ "ɱ", "ᵐ", "ᶬ" });
-//        ipaMap.put("ʔ", new String[]{ "ʡ", "ʕ", "ʢ", "ˀ", "ˤ" });
+        ipaMap.put("j", new String[]{ "ʝ", "ɟ", "ʄ", "ʲ", "ᶨ", "ᶡ" });
+        ipaMap.put("k", new String[]{ "ᵏ" });
+        ipaMap.put("l", new String[]{ "ɬ", "ɭ", "ꞎ", "ʟ", "ɫ", "ɮ", "ˡ", "ᶩ", "ᶫ", "ʎ" });
+        ipaMap.put("z", new String[]{ "ʐ", "ʑ", "ʒ", "ᶻ", "ᶼ", "ᶽ", "ᶾ" });
+        ipaMap.put("x", new String[]{ "ꭓ", "ˣ", "ᵡ" });
+        ipaMap.put("c", new String[]{ "ç", "ɕ", "ᶜ", "ᶝ" });
+        ipaMap.put("v", new String[]{ "ʋ", "ⱱ", "ʌ", "ᵛ", "ᶹ", "ᶺ" });
+        ipaMap.put("b", new String[]{ "ɓ", "β", "ʙ", "ᵇ", "ᵝ" });
+        ipaMap.put("n", new String[]{ "ɳ", "ɲ", "ŋ", "ɴ", "ⁿ", "ᶮ", "ᶯ", "ᵑ", "ᶰ" });
+        ipaMap.put("m", new String[]{ "ɱ", "ᵐ", "ᶬ" });
+        ipaMap.put("ʔ", new String[]{ "ʡ", "ʕ", "ʢ", "ˀ", "ˤ" });
     }
 
     void initialize() {
@@ -175,23 +179,68 @@ public class KeyboardButton extends MaterialButton {
         alternatives = ipaMap.get(text.toString());
         if (alternatives != null) {
             LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-            for (String alternative : alternatives) {
-                popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
-                popupTextView.setText(alternative);
-                popupTextView.setTextColor(getCurrentTextColor());
-                popupMultipleLinearLayout.addView(popupTextView);
+            if (alternatives.length <= MAX_PER_ROW) {
+                popupMultipleLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
+                for (String alternative : alternatives) {
+                    popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
+                    popupTextView.setText(alternative);
+                    popupTextView.setTextColor(getCurrentTextColor());
+                    popupMultipleLinearLayout.addView(popupTextView);
+                }
+            } else {
+                popupMultipleLinearLayout.setOrientation(LinearLayout.VERTICAL);
+                int row1Count = (alternatives.length + 1) / 2;
+                int[] splits = {0, row1Count, alternatives.length};
+                for (int r = 0; r < 2; r++) {
+                    LinearLayout row = new LinearLayout(getContext());
+                    row.setOrientation(LinearLayout.HORIZONTAL);
+                    for (int i = splits[r]; i < splits[r + 1]; i++) {
+                        popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
+                        popupTextView.setText(alternatives[i]);
+                        popupTextView.setTextColor(getCurrentTextColor());
+                        row.addView(popupTextView);
+                    }
+                    popupMultipleLinearLayout.addView(row);
+                }
             }
         }
     }
 
-    private void setPopupSizes(PopupWindow popupWindow, LinearLayout popupLinearLayout) {
-        for (int i = 0; i < popupLinearLayout.getChildCount(); ++i) {
-            TextView textView = (TextView) popupLinearLayout.getChildAt(i);
-            textView.setWidth(getWidth());
+    private void setPopupSizes(PopupWindow popupWindow, LinearLayout container) {
+        boolean isMultiRow = container.getChildCount() > 0
+                && container.getChildAt(0) instanceof LinearLayout;
+        if (isMultiRow) {
+            for (int i = 0; i < container.getChildCount(); i++) {
+                LinearLayout row = (LinearLayout) container.getChildAt(i);
+                for (int j = 0; j < row.getChildCount(); j++) {
+                    ((TextView) row.getChildAt(j)).setWidth(getWidth());
+                }
+            }
+        } else {
+            for (int i = 0; i < container.getChildCount(); i++) {
+                ((TextView) container.getChildAt(i)).setWidth(getWidth());
+            }
         }
-        popupLinearLayout.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        popupWindow.setWidth(popupLinearLayout.getMeasuredWidth());
-        popupWindow.setHeight(getHeight());
+        container.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popupWindow.setWidth(container.getMeasuredWidth());
+        popupWindow.setHeight(getHeight() * (isMultiRow ? container.getChildCount() : 1));
+    }
+
+    private List<TextView> getMultiplePopupTextViews() {
+        List<TextView> result = new ArrayList<>();
+        LinearLayout container = popupWindowMultiple.getContentView().findViewById(R.id.linearLayout);
+        for (int i = 0; i < container.getChildCount(); i++) {
+            View child = container.getChildAt(i);
+            if (child instanceof LinearLayout) {
+                LinearLayout row = (LinearLayout) child;
+                for (int j = 0; j < row.getChildCount(); j++) {
+                    result.add((TextView) row.getChildAt(j));
+                }
+            } else if (child instanceof TextView) {
+                result.add((TextView) child);
+            }
+        }
+        return result;
     }
 
     public interface OnAlternativeSelectedListener {
@@ -276,29 +325,31 @@ public class KeyboardButton extends MaterialButton {
         float touchY = location[1] + y;
 
         int selectedIdx = -1;
-        LinearLayout popupLinearLayout =
-                popupWindowMultiple.getContentView().findViewById(R.id.linearLayout);
-        for (int i = 0; i < popupLinearLayout.getChildCount(); ++i) {
-            TextView textView = (TextView) popupLinearLayout.getChildAt(i);
-            int[] textViewLocation = new int[2];
-            textView.getLocationOnScreen(textViewLocation);
+        List<TextView> textViews = getMultiplePopupTextViews();
+        for (int i = 0; i < textViews.size(); i++) {
+            TextView textView = textViews.get(i);
+            int[] tvLocation = new int[2];
+            textView.getLocationOnScreen(tvLocation);
 
-            float startX = textViewLocation[0];
-            float endX = textViewLocation[0] + textView.getWidth();
+            float startX = tvLocation[0];
+            float endX = tvLocation[0] + textView.getWidth();
+            float startY = tvLocation[1];
+            float endY = tvLocation[1] + textView.getHeight();
 
-            if (selectedIdx == -1 && startX < touchX && touchX <= endX) {
+            if (selectedIdx == -1
+                    && startX < touchX && touchX <= endX
+                    && startY < touchY && touchY <= endY) {
                 selectedIdx = i;
                 if (lastSelectedIdx != selectedIdx) {
                     textView.setBackgroundResource(R.drawable.alternative_selected_bg);
                 }
-            }
-            else {
+            } else {
                 textView.setBackground(null);
             }
         }
 
         if (selectedIdx != -1 && selectedIdx != lastSelectedIdx) {
-            if (lastSelectedIdx != -1) {  // first candidate selection already has long press feedback
+            if (lastSelectedIdx != -1) {
                 this.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
         }
