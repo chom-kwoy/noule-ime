@@ -253,12 +253,16 @@ public class KeyboardButton extends MaterialButton {
     }
 
     private void showPopup(PopupWindow popupWindow) {
-        setPopupSizes(popupWindow, popupWindow.getContentView().findViewById(R.id.linearLayout));
+        LinearLayout container = popupWindow.getContentView().findViewById(R.id.linearLayout);
+        setPopupSizes(popupWindow, container);
 
         int[] location = new int[2];
         this.getLocationInWindow(location);
         int popupX = location[0] - (popupWindow.getWidth() - getWidth()) / 2;
-        int popupY = location[1] - popupWindow.getHeight();
+        // The LinearLayout is centered inside the ConstraintLayout that fills the popup window.
+        // Content bottom = popupY + (windowHeight + contentHeight) / 2.
+        // Solve for popupY so content bottom sits at the key top edge (location[1]).
+        int popupY = location[1] - (popupWindow.getHeight() + container.getMeasuredHeight()) / 2;
         popupWindow.showAtLocation(this, Gravity.NO_GRAVITY, popupX, popupY);
     }
 
