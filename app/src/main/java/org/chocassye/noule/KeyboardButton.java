@@ -5,13 +5,13 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -23,7 +23,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.HashMap;
 
-public class KeyboardButton extends MaterialButton implements View.OnLongClickListener {
+public class KeyboardButton extends MaterialButton {
     public KeyboardButton(@NonNull Context context) {
         super(context);
         initialize();
@@ -46,6 +46,7 @@ public class KeyboardButton extends MaterialButton implements View.OnLongClickLi
     float lastX, lastY;
 
     Handler handler;
+    private Runnable longPressRunnable;
 
     private static HashMap<String, String[]> ipaMap = new HashMap<>();
     static {
@@ -97,9 +98,17 @@ public class KeyboardButton extends MaterialButton implements View.OnLongClickLi
         popupWindowMultiple.setAnimationStyle(R.style.PopupWindowAnimation);
         popupWindowMultiple.setTouchable(false);
 
-        setOnLongClickListener(this);
-
         handler = new Handler(Looper.getMainLooper());
+        longPressRunnable = () -> {
+            if (alternatives != null) {
+                isLongClicked = true;
+                lastSelectedIdx = -1;
+                popupWindowSingle.dismiss();
+                showPopup(popupWindowMultiple);
+                performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                handler.postDelayed(() -> handleTouchMoveEvent(lastX, lastY), 50);
+            }
+        };
     }
 
     public void dismissPopups() {
@@ -185,19 +194,6 @@ public class KeyboardButton extends MaterialButton implements View.OnLongClickLi
         popupWindow.setHeight(getHeight());
     }
 
-    @Override
-    public boolean onLongClick(View v) {
-        Log.i("MYLOG", "onLongClick");
-        if (alternatives != null) {
-            isLongClicked = true;
-            lastSelectedIdx = -1;
-            popupWindowSingle.dismiss();
-            showPopup(popupWindowMultiple);
-        }
-        handler.postDelayed(() -> handleTouchMoveEvent(lastX, lastY), 50);
-        return true;
-    }
-
     public interface OnAlternativeSelectedListener {
         void onAlternativeSelectedEvent(String alternative);
     }
@@ -222,29 +218,47 @@ public class KeyboardButton extends MaterialButton implements View.OnLongClickLi
         lastX = event.getX();
         lastY = event.getY();
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            showPopup(popupWindowSingle);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                // Cancel any stale long-press timer from a previous tap before starting
+                // a new one — this is the main guard against false triggers during rapid tapping.
+                handler.removeCallbacksAndMessages(null);
+                showPopup(popupWindowSingle);
+                isLongClicked = false;
+                handler.postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout());
+                break;
 
-            isLongClicked = false;
-
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            dismissPopups();
-
-            // Propagate alternative selected event
-            if (isLongClicked) {
-                if (lastSelectedIdx != -1 && onAlternativeSelectedListener != null) {
-                    if (alternatives != null && lastSelectedIdx < alternatives.length) {
-                        onAlternativeSelectedListener.onAlternativeSelectedEvent(
-                                alternatives[lastSelectedIdx]
-                        );
+            case MotionEvent.ACTION_UP:
+                handler.removeCallbacksAndMessages(null);
+                dismissPopups();
+                if (isLongClicked) {
+                    if (lastSelectedIdx != -1 && onAlternativeSelectedListener != null) {
+                        if (alternatives != null && lastSelectedIdx < alternatives.length) {
+                            onAlternativeSelectedListener.onAlternativeSelectedEvent(
+                                    alternatives[lastSelectedIdx]);
+                        }
                     }
+                    isLongClicked = false;
+                    // Send CANCEL instead of UP so the touch listener's performClick()
+                    // doesn't fire alongside the alternative selection.
+                    MotionEvent cancel = MotionEvent.obtain(event);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    boolean result = super.dispatchTouchEvent(cancel);
+                    cancel.recycle();
+                    return result;
                 }
-            }
+                isLongClicked = false;
+                break;
 
-            isLongClicked = false;
+            case MotionEvent.ACTION_CANCEL:
+                handler.removeCallbacksAndMessages(null);
+                dismissPopups();
+                isLongClicked = false;
+                break;
 
-        } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            handleTouchMoveEvent(event.getX(), event.getY());
+            case MotionEvent.ACTION_MOVE:
+                handleTouchMoveEvent(event.getX(), event.getY());
+                break;
         }
 
         return super.dispatchTouchEvent(event);
