@@ -89,11 +89,13 @@ public class KeyboardButton extends MaterialButton implements View.OnLongClickLi
 
         popupWindowSingle = new PopupWindow(popupSingle, 200, 100, false);
         popupWindowSingle.setAnimationStyle(R.style.PopupWindowAnimation);
+        popupWindowSingle.setTouchable(false);
 
         // Layout for multiple candidates, shown when long pressed
         View popupMultiple = layoutInflater.inflate(R.layout.button_popup, null);
         popupWindowMultiple = new PopupWindow(popupMultiple, 200, 100, false);
         popupWindowMultiple.setAnimationStyle(R.style.PopupWindowAnimation);
+        popupWindowMultiple.setTouchable(false);
 
         setOnLongClickListener(this);
 
