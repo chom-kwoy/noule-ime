@@ -45,6 +45,7 @@ public class KeyboardButton extends MaterialButton {
 
     private PopupWindow popupWindowSingle, popupWindowMultiple;
     private int lastSelectedIdx = -1;
+    private boolean skipNextSelectionHaptic = false;
     String[] alternatives;
     boolean isLongClicked = false;
     float lastX, lastY;
@@ -137,6 +138,7 @@ public class KeyboardButton extends MaterialButton {
             if (alternatives != null) {
                 isLongClicked = true;
                 lastSelectedIdx = -1;
+                skipNextSelectionHaptic = true;
                 popupWindowSingle.dismiss();
                 showPopup(popupWindowMultiple);
                 doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
@@ -397,10 +399,11 @@ public class KeyboardButton extends MaterialButton {
             }
         }
 
-        if (selectedIdx != -1 && selectedIdx != lastSelectedIdx) {
-            if (lastSelectedIdx != -1) {
-                this.doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-            }
+        if (selectedIdx != -1 && selectedIdx != lastSelectedIdx && !skipNextSelectionHaptic) {
+            this.doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        }
+        if (selectedIdx != -1) {
+            skipNextSelectionHaptic = false;
         }
         lastSelectedIdx = selectedIdx;
     }
