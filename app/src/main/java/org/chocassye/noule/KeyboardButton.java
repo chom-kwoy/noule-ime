@@ -47,7 +47,14 @@ public class KeyboardButton extends MaterialButton {
     private PopupWindow popupWindowSingle, popupWindowMultiple;
     private int lastSelectedIdx = -1;
     private boolean skipNextSelectionHaptic = false;
-    private static Typeface charisFace;
+    private static Typeface andikaFace;
+
+    static Typeface getAndikaFace(Context context) {
+        if (andikaFace == null) {
+            andikaFace = Typeface.createFromAsset(context.getAssets(), "Andika-Regular.ttf");
+        }
+        return andikaFace;
+    }
     String[] alternatives;
     boolean isLongClicked = false;
     float lastX, lastY;
@@ -156,6 +163,10 @@ public class KeyboardButton extends MaterialButton {
                 showPopup(popupWindowMultiple);
                 doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                 handler.postDelayed(() -> handleTouchMoveEvent(lastX, lastY), 50);
+            } else if (onKeyLongPressListener != null) {
+                isLongClicked = true;
+                doHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                onKeyLongPressListener.onKeyLongPress();
             }
         };
     }
@@ -225,8 +236,8 @@ public class KeyboardButton extends MaterialButton {
         if (alternatives != null) {
             LayoutInflater layoutInflater = LayoutInflater.from(getContext());
             boolean isDiacritic = text.length() == 1 && Character.isDigit(text.charAt(0));
-            if (isDiacritic && charisFace == null) {
-                charisFace = Typeface.createFromAsset(getContext().getAssets(), "Charis-Regular.ttf");
+            if (isDiacritic && andikaFace == null) {
+                andikaFace = Typeface.createFromAsset(getContext().getAssets(), "Andika-Regular.ttf");
             }
             if (alternatives.length <= MAX_PER_ROW) {
                 popupMultipleLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -234,7 +245,7 @@ public class KeyboardButton extends MaterialButton {
                     popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
                     popupTextView.setText(alternative);
                     popupTextView.setTextColor(getCurrentTextColor());
-                    if (isDiacritic) popupTextView.setTypeface(charisFace);
+                    if (isDiacritic) popupTextView.setTypeface(andikaFace);
                     popupMultipleLinearLayout.addView(popupTextView);
                 }
             } else {
@@ -248,7 +259,7 @@ public class KeyboardButton extends MaterialButton {
                         popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
                         popupTextView.setText(alternatives[i]);
                         popupTextView.setTextColor(getCurrentTextColor());
-                        if (isDiacritic) popupTextView.setTypeface(charisFace);
+                        if (isDiacritic) popupTextView.setTypeface(andikaFace);
                         row.addView(popupTextView);
                     }
                     popupMultipleLinearLayout.addView(row);
@@ -308,6 +319,15 @@ public class KeyboardButton extends MaterialButton {
     private OnAlternativeSelectedListener onAlternativeSelectedListener;
     public void setOnAlternativeSelectedListener(OnAlternativeSelectedListener listener) {
         onAlternativeSelectedListener = listener;
+    }
+
+    public interface OnKeyLongPressListener {
+        void onKeyLongPress();
+    }
+
+    private OnKeyLongPressListener onKeyLongPressListener;
+    public void setOnKeyLongPressListener(OnKeyLongPressListener listener) {
+        onKeyLongPressListener = listener;
     }
 
     private void showPopup(PopupWindow popupWindow) {

@@ -23,7 +23,12 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.graphics.Typeface;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextPaint;
+import android.text.style.MetricAffectingSpan;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
@@ -101,6 +106,15 @@ public class NouleKeyboardView extends ConstraintLayout {
         };
     }
 
+    // Small-caps equivalents for a–z
+    private static final String[][] SMALL_CAPS_EN_LAYOUT = {
+        {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+        {"ꞯ", "ᴡ", "ᴇ", "ʀ", "ᴛ", "ʏ", "ᴜ", "ɪ", "ᴏ", "ᴘ"},
+        {"space-.5", "ᴀ", "ꜱ", "ᴅ", "ꜰ", "ɢ", "ʜ", "ᴊ", "ᴋ", "ʟ", "space-.5"},
+        {"Shift", "ᴢ", "x", "ᴄ", "ᴠ", "ʙ", "ɴ", "ᴍ", "Back"},
+        {"!#?", "KO", "Space", ".", "Enter"},
+    };
+
     private LayoutSet curLayoutSet;
     private String[][] curLayout;
     private LayoutSet prevLayoutSet;
@@ -112,6 +126,7 @@ public class NouleKeyboardView extends ConstraintLayout {
     private SuggestionAdapter suggestionAdapter;
     private boolean ignoreOnce = false;
     private boolean pendingUnshift = false;
+    private boolean smallCapsMode = false;
     private EditorInfo curEditorInfo = null;
 
     private Integer themeColor, backgroundColor, buttonColor;
@@ -245,7 +260,13 @@ public class NouleKeyboardView extends ConstraintLayout {
 
     public void switchLayoutSet(LayoutSet newLayoutSet) {
         this.curLayoutSet = newLayoutSet;
+        smallCapsMode = false;
         setCurKeyLayout(newLayoutSet.lowerLayout);
+    }
+
+    private void activateSmallCapsMode() {
+        smallCapsMode = true;
+        setCurKeyLayout(SMALL_CAPS_EN_LAYOUT);
     }
 
     private void finishComposing(InputConnection ic) {
@@ -506,7 +527,8 @@ public class NouleKeyboardView extends ConstraintLayout {
                 else {
                     View buttonView = curRow.getChildAt(index);
                     TextView smallText = buttonView.findViewById(R.id.hintTextView);
-                    if (HanjaDict.cangjieLayout.containsKey(key.toUpperCase())) {
+                    if (keys != SMALL_CAPS_EN_LAYOUT &&
+                            HanjaDict.cangjieLayout.containsKey(key.toUpperCase())) {
                         smallText.setText(HanjaDict.cangjieLayout.get(key.toUpperCase()));
                     } else {
                         smallText.setText("");
@@ -540,6 +562,20 @@ public class NouleKeyboardView extends ConstraintLayout {
                     button.setOnAlternativeSelectedListener(alternative -> {
                         onAlternativeSelected(key, alternative);
                     });
+                    if (key.equals("Shift") && curLayoutSet == EN_LAYOUT) {
+                        button.setOnKeyLongPressListener(this::activateSmallCapsMode);
+                    } else {
+                        button.setOnKeyLongPressListener(null);
+                    }
+                    if (keys == SMALL_CAPS_EN_LAYOUT
+                            && key.length() == 1
+                            && !Character.isDigit(key.charAt(0))
+                            && !key.equals(".")) {
+                        SpannableString span = new SpannableString(key);
+                        span.setSpan(new AndikaSpan(KeyboardButton.getAndikaFace(getContext())),
+                                0, key.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        button.setText(span);
+                    }
 
                     button.setTextSize(15);
 
@@ -658,7 +694,10 @@ public class NouleKeyboardView extends ConstraintLayout {
         // Layout-switching keys work without an InputConnection.
         if (key.equals("Shift")) {
             makeHapticFeedback.run();
-            if (curLayout == curLayoutSet.lowerLayout) {
+            if (smallCapsMode) {
+                smallCapsMode = false;
+                setCurKeyLayout(curLayoutSet.lowerLayout);
+            } else if (curLayout == curLayoutSet.lowerLayout) {
                 setCurKeyLayout(curLayoutSet.upperLayout);
             } else {
                 setCurKeyLayout(curLayoutSet.lowerLayout);
@@ -762,5 +801,12 @@ public class NouleKeyboardView extends ConstraintLayout {
             setCurKeyLayout(curLayoutSet.lowerLayout);
             pendingUnshift = false;
         }
+    }
+
+    private static class AndikaSpan extends MetricAffectingSpan {
+        private final Typeface face;
+        AndikaSpan(Typeface face) { this.face = face; }
+        @Override public void updateMeasureState(TextPaint p) { p.setTypeface(face); }
+        @Override public void updateDrawState(TextPaint tp) { tp.setTypeface(face); }
     }
 }
