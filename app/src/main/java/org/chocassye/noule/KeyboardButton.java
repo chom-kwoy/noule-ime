@@ -56,35 +56,36 @@ public class KeyboardButton extends MaterialButton {
 
     private static HashMap<String, String[]> ipaMap = new HashMap<>();
     static {
-        ipaMap.put("q", new String[]{ "ʠ", "ɋ" });
-        ipaMap.put("w", new String[]{ "ʍ", "ɰ" });
-        ipaMap.put("e", new String[]{ "ɘ", "ə", "ɚ", "ɛ", "ɜ", "ɞ", "ɝ" });
-        ipaMap.put("r", new String[]{ "ɾ", "ɽ", "ɹ", "ɻ", "ɺ", "ʀ", "ʁ" });
-        ipaMap.put("t", new String[]{ "ʈ", "θ" });
-        ipaMap.put("y", new String[]{ "ʏ", "ɤ", "ɥ" });
-        ipaMap.put("u", new String[]{ "ʉ", "ɯ", "ʊ" });
-        ipaMap.put("i", new String[]{ "ɨ", "ɪ" });
-        ipaMap.put("o", new String[]{ "ɔ", "ø", "ɵ", "œ", "ɶ" });
-        ipaMap.put("p", new String[]{});
-        ipaMap.put("a", new String[]{ "ɐ", "æ", "ɑ", "ɒ" });
-        ipaMap.put("s", new String[]{ "ʂ", "ʃ" });
-        ipaMap.put("d", new String[]{ "ɖ", "ᶑ", "ð", "ɗ" });
-        ipaMap.put("f", new String[]{ "ɸ" });
-        ipaMap.put("g", new String[]{ "ɣ", "ɢ", "ɠ", "ʛ" });
-        ipaMap.put("h", new String[]{ "ɦ", "ħ", "ʜ", "ɧ" });
-        ipaMap.put("j", new String[]{ "ʝ", "ɟ", "ʄ" });
-        ipaMap.put("k", new String[]{ "ᵏ" });
-        ipaMap.put("l", new String[]{ "ɬ", "ɭ", "ꞎ", "ʟ", "ɫ", "ɮ", "ʎ" });
-        ipaMap.put("z", new String[]{ "ʐ", "ʑ", "ʒ" });
-        ipaMap.put("x", new String[]{ "ꭓ" });
-        ipaMap.put("c", new String[]{ "ç", "ɕ" });
-        ipaMap.put("v", new String[]{ "ʋ", "ⱱ", "ʌ" });
-        ipaMap.put("b", new String[]{ "ɓ", "β", "ʙ"});
-        ipaMap.put("n", new String[]{ "ɳ", "ɲ", "ŋ", "ɴ" });
-        ipaMap.put("m", new String[]{ "ɱ" });
-        ipaMap.put(".", new String[]{ "ʔ", "ʡ", "ʕ", "ʢ", "ˀ", "ˤ" });
+        ipaMap.put(".", new String[]{ ",", "?", "!", ":" });
+        // IPA
+        ipaMap.put("a", new String[]{ "ɐ", "ɑ", "ɒ", "æ" });
+        ipaMap.put("b", new String[]{ "ʙ", "ɓ", "β" });
+        ipaMap.put("c", new String[]{ "ƈ", "ç", "ʗ", "ɕ" });
+        ipaMap.put("d", new String[]{ "ᶑ", "ɗ", "ð", "ɖ", "ʣ", "ʤ", "ʥ" });
+        ipaMap.put("e", new String[]{ "ɝ", "ə", "ɚ", "ɛ", "ɜ", "ɞ", "ʚ", "ɘ" });
+        ipaMap.put("f", new String[]{ "ǀ", "ǁ", "ǂ", "ǃ", "ʘ", "ɸ" });
+        ipaMap.put("g", new String[]{ "ɢ", "ɠ", "ɣ", "ɡ", "ʛ", "ɤ" });
+        ipaMap.put("h", new String[]{ "ʜ", "ɥ", "ɦ", "ɧ", "ħ", "ʮ", "ʯ" });
+        ipaMap.put("i", new String[]{ "ɪ", "ɩ", "ɨ", "ˑ", "ː" });
+        ipaMap.put("j", new String[]{ "ʝ", "ɟ", "ʄ", "‿" });
+        ipaMap.put("k", new String[]{ "ʞ", "ƙ" });
+        ipaMap.put("l", new String[]{ "ʟ", "ƛ", "ɬ", "λ", "ɭ", "ɫ", "ȴ", "ɮ" });
+        ipaMap.put("m", new String[]{ "ɯ", "ɱ", "ɰ" });
+        ipaMap.put("n", new String[]{ "ɴ", "ɳ", "ŋ", "ƞ", "ȵ", "ɲ" });
+        ipaMap.put("o", new String[]{ "ɶ", "ɷ", "ɔ", "ɵ", "ø", "œ" });
+        ipaMap.put("p", new String[]{ "ƥ" });
+        ipaMap.put("q", new String[]{ "ʠ", "ʔ", "ʕ", "ʡ", "ʢ", "ʖ" });
+        ipaMap.put("r", new String[]{ "ɿ", "ʀ", "ɹ", "ɾ", "ʁ", "ɽ", "ɻ", "ɺ", "ɼ" });
+        ipaMap.put("s", new String[]{ "ʅ", "ʃ", "ʂ", "ʆ" });
+        ipaMap.put("t", new String[]{ "ʇ", "ƭ", "θ", "ʈ", "ƫ", "ȶ" });
+        ipaMap.put("u", new String[]{ "ʊ", "ʉ", "ˌ", "ˈ" });
+        ipaMap.put("v", new String[]{ "ʌ", "ⱱ", "ʋ", "|", "‖" });
+        ipaMap.put("w", new String[]{ "ʍ" });
+        ipaMap.put("x", new String[]{ "χ", "ʦ", "ʧ", "ʨ" });
+        ipaMap.put("y", new String[]{ "ʏ", "ʎ" });
+        ipaMap.put("z", new String[]{ "ʒ", "ʐ", "ƻ", "ʑ", "ʓ" });
         // Show superscript IPA on caps
-        ipaMap.put("Q", new String[]{});
+        ipaMap.put("Q", new String[]{ "ˀ", "ˤ" });
         ipaMap.put("W", new String[]{ "ʷ", "ᶭ" });
         ipaMap.put("E", new String[]{ "ᵉ", "ᵊ", "ᵋ", "ᶟ" });
         ipaMap.put("R", new String[]{ "ʳ", "ʴ", "ʵ", "ʶ" });
@@ -98,8 +99,8 @@ public class KeyboardButton extends MaterialButton {
         ipaMap.put("S", new String[]{ "ˢ", "ᶳ", "ᶴ" });
         ipaMap.put("D", new String[]{ "ᵈ", "ᶞ" });
         ipaMap.put("F", new String[]{ "ᶠ", "ᶲ" });
-        ipaMap.put("G", new String[]{});
-        ipaMap.put("H", new String[]{ "ʰ", "ʱ" });
+        ipaMap.put("G", new String[]{ "ˠ" });
+        ipaMap.put("H", new String[]{ "ʰ", "ʱ", "ꟸ" });
         ipaMap.put("J", new String[]{ "ʲ", "ᶨ", "ᶡ" });
         ipaMap.put("K", new String[]{ "ᵏ" });
         ipaMap.put("L", new String[]{ "ˡ", "ᶩ", "ᶫ" });
@@ -364,7 +365,10 @@ public class KeyboardButton extends MaterialButton {
         float touchX = location[0] + x;
         float touchY = location[1] + y - getHeight();
 
+        // Pick the item whose bounding box is closest to the touch point so that
+        // sliding outside the popup still keeps the nearest item selected.
         int selectedIdx = -1;
+        float minDist = Float.MAX_VALUE;
         List<TextView> textViews = getMultiplePopupTextViews();
         for (int i = 0; i < textViews.size(); i++) {
             TextView textView = textViews.get(i);
@@ -376,15 +380,20 @@ public class KeyboardButton extends MaterialButton {
             float startY = tvLocation[1];
             float endY = tvLocation[1] + textView.getHeight();
 
-            if (selectedIdx == -1
-                    && startX < touchX && touchX <= endX
-                    && startY < touchY && touchY <= endY) {
+            float dist = squaredDistToRect(touchX, touchY, startX, startY, endX, endY);
+            if (dist < minDist) {
+                minDist = dist;
                 selectedIdx = i;
+            }
+        }
+
+        for (int i = 0; i < textViews.size(); i++) {
+            if (i == selectedIdx) {
                 if (lastSelectedIdx != selectedIdx) {
-                    textView.setBackgroundResource(R.drawable.alternative_selected_bg);
+                    textViews.get(i).setBackgroundResource(R.drawable.alternative_selected_bg);
                 }
             } else {
-                textView.setBackground(null);
+                textViews.get(i).setBackground(null);
             }
         }
 
@@ -394,5 +403,12 @@ public class KeyboardButton extends MaterialButton {
             }
         }
         lastSelectedIdx = selectedIdx;
+    }
+
+    private static float squaredDistToRect(float px, float py,
+                                           float x1, float y1, float x2, float y2) {
+        float dx = Math.max(x1 - px, Math.max(0, px - x2));
+        float dy = Math.max(y1 - py, Math.max(0, py - y2));
+        return dx * dx + dy * dy;
     }
 }
