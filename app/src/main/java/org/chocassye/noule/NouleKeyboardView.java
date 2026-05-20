@@ -734,7 +734,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                 // doesn't inherit shift mode, but keep the held key visually uppercase.
                 setCurKeyLayout(curLayoutSet.lowerLayout);
                 if (button != null) {
-                    button.setText(key);
+                    button.setTextAndPopup(key);
                 }
                 pendingUnshift = true;
             }
