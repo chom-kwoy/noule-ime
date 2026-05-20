@@ -10,8 +10,8 @@ android {
         applicationId = "org.chocassye.noule"
         minSdk = 24
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.2.2"
+        versionCode = 11
+        versionName = "1.2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

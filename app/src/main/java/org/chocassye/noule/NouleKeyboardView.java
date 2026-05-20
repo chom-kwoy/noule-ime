@@ -556,6 +556,12 @@ public class NouleKeyboardView extends ConstraintLayout {
                                 haptic(v, HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
                             }
                             onKeyRelease(key);
+                        } else if (event.getAction() == MotionEvent.ACTION_CANCEL) {
+                            // Fires when KeyboardButton converts ACTION_UP to ACTION_CANCEL
+                            // after a long-press IPA selection, to suppress performClick().
+                            // We still need to run release cleanup (pendingUnshift, key repeat).
+                            v.setPressed(false);
+                            onKeyRelease(key);
                         }
                         return false;
                     });
@@ -787,6 +793,11 @@ public class NouleKeyboardView extends ConstraintLayout {
                 setCurKeyLayout(curLayoutSet.lowerLayout);
                 if (button != null) {
                     button.setTextAndPopup(key);
+                    // setCurKeyLayout just re-registered this button's listener with the
+                    // lowercase key, but composing text still ends with the uppercase key,
+                    // so restore the listener with the original pressed key.
+                    button.setOnAlternativeSelectedListener(
+                            alternative -> onAlternativeSelected(key, alternative));
                 }
                 pendingUnshift = true;
             }
