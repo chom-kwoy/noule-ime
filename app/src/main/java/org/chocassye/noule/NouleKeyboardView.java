@@ -621,13 +621,26 @@ public class NouleKeyboardView extends ConstraintLayout {
     }
 
     private void onAlternativeSelected(String key, String alternative) {
-        if (imeService != null) {
-            InputConnection ic = imeService.getCurrentInputConnection();
-            if (curComposingText.endsWith(key)) {
-                String newText = (
-                    curComposingText.substring(0, curComposingText.length() - 1) + alternative
-                );
-                updateComposingText(ic, newText);
+        if (imeService == null) return;
+        InputConnection ic = imeService.getCurrentInputConnection();
+        if (ic == null) return;
+
+        if (curComposingText.endsWith(key)) {
+            // Composing-text path (letters): replace the last composing character.
+            String newText = curComposingText.substring(0, curComposingText.length() - 1) + alternative;
+            updateComposingText(ic, newText);
+        } else {
+            // Committed-text path (numbers, symbols): the key was already committed.
+            // Delete it, then commit the alternative minus the ◌ (U+25CC) placeholder
+            // used in IPA diacritic notation so the combining mark attaches to whatever
+            // base character preceded the number.
+            CharSequence before = ic.getTextBeforeCursor(key.length(), 0);
+            if (before != null && before.toString().equals(key)) {
+                ic.deleteSurroundingText(key.length(), 0);
+            }
+            String toCommit = alternative.replace("◌", "");
+            if (!toCommit.isEmpty()) {
+                ic.commitText(toCommit, 1);
             }
         }
     }
