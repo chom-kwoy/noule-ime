@@ -1,6 +1,7 @@
 package org.chocassye.noule;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -46,6 +47,7 @@ public class KeyboardButton extends MaterialButton {
     private PopupWindow popupWindowSingle, popupWindowMultiple;
     private int lastSelectedIdx = -1;
     private boolean skipNextSelectionHaptic = false;
+    private static Typeface charisFace;
     String[] alternatives;
     boolean isLongClicked = false;
     float lastX, lastY;
@@ -112,6 +114,17 @@ public class KeyboardButton extends MaterialButton {
         ipaMap.put("B", new String[]{ "ᵇ", "ᵝ" });
         ipaMap.put("N", new String[]{ "ⁿ", "ᶮ", "ᶯ", "ᵑ", "ᶰ" });
         ipaMap.put("M", new String[]{ "ᵐ", "ᶬ" });
+        // IPA diacritics
+        ipaMap.put("1", new String[]{ "◌̀", "◌̄", "◌́", "◌̏", "◌̋" });
+        ipaMap.put("2", new String[]{ "◌̌", "◌̂", "◌᷄", "◌᷅", "◌᷈", "◌᷉" });
+        ipaMap.put("3", new String[]{ "◌̊", "◌̥", "◌̬", "◌̤", "◌̰" });
+        ipaMap.put("4", new String[]{ "◌̙", "◌̘", "◌̝", "◌̞", "◌̜", "◌̹" });
+        ipaMap.put("5", new String[]{ "◌̈", "◌̽", "◌̺", "◌̪" });
+        ipaMap.put("6", new String[]{ "◌̃", "◌˞", "◌̢", "◌̴" });
+        ipaMap.put("7", new String[]{ "◌̩", "◌̆", "◌̯" });
+        ipaMap.put("8", new String[]{ "◌͡" });
+        ipaMap.put("9", new String[]{ "◌̚" });
+        ipaMap.put("0", new String[]{ "◌̇", "◌̣", "◌̗", "◌̑", "◌̫" });
     }
 
     void initialize() {
@@ -211,12 +224,17 @@ public class KeyboardButton extends MaterialButton {
         alternatives = ipaMap.get(text.toString());
         if (alternatives != null) {
             LayoutInflater layoutInflater = LayoutInflater.from(getContext());
+            boolean isDiacritic = text.length() == 1 && Character.isDigit(text.charAt(0));
+            if (isDiacritic && charisFace == null) {
+                charisFace = Typeface.createFromAsset(getContext().getAssets(), "Charis-Regular.ttf");
+            }
             if (alternatives.length <= MAX_PER_ROW) {
                 popupMultipleLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
                 for (String alternative : alternatives) {
                     popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
                     popupTextView.setText(alternative);
                     popupTextView.setTextColor(getCurrentTextColor());
+                    if (isDiacritic) popupTextView.setTypeface(charisFace);
                     popupMultipleLinearLayout.addView(popupTextView);
                 }
             } else {
@@ -230,6 +248,7 @@ public class KeyboardButton extends MaterialButton {
                         popupTextView = (TextView) layoutInflater.inflate(R.layout.button_popup_item, null);
                         popupTextView.setText(alternatives[i]);
                         popupTextView.setTextColor(getCurrentTextColor());
+                        if (isDiacritic) popupTextView.setTypeface(charisFace);
                         row.addView(popupTextView);
                     }
                     popupMultipleLinearLayout.addView(row);
