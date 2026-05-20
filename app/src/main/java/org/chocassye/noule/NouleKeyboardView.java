@@ -524,7 +524,7 @@ public class NouleKeyboardView extends ConstraintLayout {
                     button.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             v.setPressed(true);
-                            onKeyPress(key, () -> {
+                            onKeyPress(key, button, () -> {
                                 haptic(v, HapticFeedbackConstants.KEYBOARD_TAP);
                             });
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -639,7 +639,7 @@ public class NouleKeyboardView extends ConstraintLayout {
         }
     }
 
-    private void onKeyPress(String key, Runnable makeHapticFeedback) {
+    private void onKeyPress(String key, KeyboardButton button, Runnable makeHapticFeedback) {
         if (imeService == null) return;
 
         // Layout-switching keys work without an InputConnection.
@@ -685,16 +685,16 @@ public class NouleKeyboardView extends ConstraintLayout {
                 InputConnection retryIc = imeService.getCurrentInputConnection();
                 if (retryIc == null) return;
                 makeHapticFeedback.run();
-                processKeyWithIC(key, retryIc, makeHapticFeedback);
+                processKeyWithIC(key, button, retryIc, makeHapticFeedback);
             }, 50);
             return;
         }
 
         makeHapticFeedback.run();
-        processKeyWithIC(key, ic, makeHapticFeedback);
+        processKeyWithIC(key, button, ic, makeHapticFeedback);
     }
 
-    private void processKeyWithIC(String key, InputConnection ic, Runnable makeHapticFeedback) {
+    private void processKeyWithIC(String key, KeyboardButton button, InputConnection ic, Runnable makeHapticFeedback) {
         if (key.equals("Back")) {
             keyRepeatHandler.postDelayed(new Runnable() {
                 @Override
@@ -729,7 +729,15 @@ public class NouleKeyboardView extends ConstraintLayout {
         }
         else {
             typeSymbol(ic, key);
-            pendingUnshift = (curLayout == curLayoutSet.upperLayout);
+            if (curLayout == curLayoutSet.upperLayout) {
+                // Immediately switch all other keys to lower so a subsequent rapid tap
+                // doesn't inherit shift mode, but keep the held key visually uppercase.
+                setCurKeyLayout(curLayoutSet.lowerLayout);
+                if (button != null) {
+                    button.setText(key);
+                }
+                pendingUnshift = true;
+            }
         }
     }
 
